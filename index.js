@@ -1,5 +1,5 @@
 // ============================================================
-// 0. USER PROFILE MANAGEMENT (NEW)
+// 0. USER PROFILE MANAGEMENT
 // ============================================================
 let userProfile = { name: 'Guest', currency: 'USD', symbol: '$' };
 
@@ -21,9 +21,8 @@ function saveUserProfile(name, currency, initialBalance = 0) {
     };
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
     
-    // If initial balance is provided and > 0, add it as a transaction
     if (initialBalance > 0) {
-        const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+        const month = new Date().toISOString().slice(0, 7);
         const newTx = {
             id: Date.now(),
             description: '💰 Initial Deposit (Sign-up)',
@@ -32,7 +31,6 @@ function saveUserProfile(name, currency, initialBalance = 0) {
             type: 'income',
             date: month + '-01'
         };
-        // Load existing transactions or initialize
         let txs = JSON.parse(localStorage.getItem('financeData') || '[]');
         txs.push(newTx);
         localStorage.setItem('financeData', JSON.stringify(txs));
@@ -45,7 +43,6 @@ function saveUserProfile(name, currency, initialBalance = 0) {
 }
 
 function updateUIWithUser() {
-    // Update sidebar
     document.getElementById('sidebarUserName').textContent = userProfile.name;
     const initials = userProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     document.getElementById('userAvatar').textContent = initials;
@@ -64,16 +61,15 @@ function showLoginPage(show) {
     }
 }
 
-// Logout
 function logoutUser() {
     if (confirm('Are you sure you want to logout? Your data will remain saved.')) {
         localStorage.removeItem('userProfile');
-        location.reload(); // Simple reload to reset state
+        location.reload();
     }
 }
 
 // ============================================================
-// 1. SIDEBAR LOGIC
+// 1. SIDEBAR LOGIC (FIXED: overlay only on mobile, NO BLUR)
 // ============================================================
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
@@ -83,7 +79,14 @@ const mainContent = document.getElementById('mainContent');
 function toggleSidebar(forceState) {
     const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
     sidebar.classList.toggle('open', isOpen);
-    overlay.classList.toggle('active', isOpen);
+
+    // Only show overlay on mobile (under 900px)
+    if (window.innerWidth < 901) {
+        overlay.classList.toggle('active', isOpen);
+    } else {
+        overlay.classList.remove('active');
+    }
+
     if (window.innerWidth >= 901) {
         mainContent.classList.toggle('sidebar-open', isOpen);
     } else {
@@ -99,6 +102,7 @@ document.addEventListener('keydown', (e) => {
         toggleSidebar(false);
     }
 });
+
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -106,8 +110,14 @@ window.addEventListener('resize', () => {
         const isDesktop = window.innerWidth >= 901;
         if (isDesktop && sidebar.classList.contains('open')) {
             mainContent.classList.add('sidebar-open');
+            overlay.classList.remove('active');
         } else {
             mainContent.classList.remove('sidebar-open');
+        }
+        if (!isDesktop && sidebar.classList.contains('open')) {
+            overlay.classList.add('active');
+        } else if (!isDesktop) {
+            overlay.classList.remove('active');
         }
     }, 150);
 });
@@ -133,7 +143,6 @@ function closeSettings() {
 }
 settingsNavTrigger.addEventListener('click', openSettings);
 closeSettingsBtn.addEventListener('click', closeSettings);
-// Click outside modal to close
 settingsModal.addEventListener('click', (e) => {
     if (e.target === settingsModal) closeSettings();
 });
@@ -148,7 +157,7 @@ saveSettingsBtn.addEventListener('click', () => {
     userProfile.symbol = symbolMap[currency] || '$';
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
     updateUIWithUser();
-    renderAll(); // Refresh currency symbols in list/chart
+    renderAll();
     closeSettings();
     showToast('✅ Settings updated successfully!', 'success');
 });
@@ -172,7 +181,6 @@ document.getElementById('loginBtn').addEventListener('click', () => {
     saveUserProfile(name, currency, balance);
 });
 
-// Allow Enter key on login
 document.getElementById('loginBalance').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('loginBtn').click();
 });
@@ -239,14 +247,12 @@ function initApp() {
     }
 }
 
-// Check user on load
 document.addEventListener('DOMContentLoaded', () => {
     const hasUser = loadUserProfile();
     if (hasUser) {
         showLoginPage(false);
         initApp();
         updateUIWithUser();
-        // Restore sidebar state
         const savedSidebarState = localStorage.getItem('sidebarOpen');
         const isDesktop = window.innerWidth >= 901;
         let defaultOpen = isDesktop;
@@ -254,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleSidebar(defaultOpen);
     } else {
         showLoginPage(true);
-        // Pre-fill dark mode for login page too
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
         }
@@ -290,7 +295,6 @@ function loadFromLocalStorage() {
         transactions = JSON.parse(stored);
         return;
     }
-    // If no data, start empty (user's initial balance was added during signup)
     transactions = [];
     saveToLocalStorage();
 }
