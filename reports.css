@@ -1,14 +1,13 @@
 /* ============================================================
-   REPORTS PAGE – FORCE 100% FULL WIDTH
-   This file overrides all previous styles
+   REPORTS PAGE – FIXED: Sidebar pushes content, not overlaps
    ============================================================ */
 
-/* ----- 1. Reset and Base Overrides ----- */
+/* ----- Reset overrides ----- */
 * {
     box-sizing: border-box !important;
 }
 
-/* ----- 2. Main App Container ----- */
+/* ----- Main App Container ----- */
 .app-container {
     width: 100% !important;
     max-width: 100% !important;
@@ -16,22 +15,38 @@
     margin: 0 !important;
 }
 
-/* ----- 3. Main Content – 100% width ----- */
+/* ----- Main Content – behaves like index.html ----- */
 .main-content {
     padding: 20px 24px !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     box-sizing: border-box !important;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* When sidebar is open on desktop: push content to the right */
+@media (min-width: 901px) {
+    .main-content.sidebar-open {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;  /* This is the key! */
+        max-width: calc(100% - 260px) !important;
+    }
 }
 
 @media (max-width: 900px) {
     .main-content {
         padding: 16px 16px !important;
     }
+    /* On mobile, sidebar overlaps – content stays 100% width */
+    .main-content.sidebar-open {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
 }
 
-/* ----- 4. Force every child container to stretch full width ----- */
+/* ----- Force child containers to stretch full width of their parent ----- */
 .top-header,
 .filter-bar,
 .summary-grid,
@@ -48,7 +63,7 @@
     margin-right: 0 !important;
 }
 
-/* ----- 5. Summary Grid – exactly like index ----- */
+/* ----- Summary Grid – matches index exactly ----- */
 .summary-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
@@ -56,7 +71,7 @@
     margin-bottom: 25px !important;
 }
 
-/* ----- 6. Row – two columns on desktop, one on mobile ----- */
+/* ----- Row – two columns on desktop, one on mobile ----- */
 .row {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
@@ -71,7 +86,7 @@
     }
 }
 
-/* ----- 7. Chart containers – full width ----- */
+/* ----- Chart containers ----- */
 .chart-box {
     background: var(--bg-card) !important;
     padding: 28px !important;
@@ -84,7 +99,7 @@
     min-height: 280px !important;
 }
 
-/* ----- 8. Filter Bar – full width ----- */
+/* ----- Filter Bar ----- */
 .filter-bar {
     display: flex !important;
     justify-content: space-between !important;
@@ -99,7 +114,7 @@
     box-shadow: var(--shadow) !important;
 }
 
-/* ----- 9. Top Spending List – full width items ----- */
+/* ----- Top Spending List ----- */
 #topSpendingList .spending-item {
     display: flex !important;
     justify-content: space-between !important;
@@ -136,7 +151,7 @@
     transition: width 0.3s ease !important;
 }
 
-/* ----- 10. Dark Mode overrides ----- */
+/* ----- Dark Mode ----- */
 body.dark #topSpendingList .spending-item {
     background: var(--bg-input) !important;
 }
@@ -144,7 +159,7 @@ body.dark #topSpendingList .spending-item:hover {
     background: var(--hover-bg) !important;
 }
 
-/* ----- 11. Fix for any hidden overflow ----- */
+/* ----- Prevent horizontal overflow ----- */
 body {
     overflow-x: hidden !important;
 }
