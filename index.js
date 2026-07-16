@@ -1,5 +1,79 @@
 // ============================================================
-// 0. SIDEBAR SLIDER LOGIC (Added)
+// 0. USER PROFILE MANAGEMENT (NEW)
+// ============================================================
+let userProfile = { name: 'Guest', currency: 'USD', symbol: '$' };
+
+function loadUserProfile() {
+    const stored = localStorage.getItem('userProfile');
+    if (stored) {
+        userProfile = JSON.parse(stored);
+        return true;
+    }
+    return false;
+}
+
+function saveUserProfile(name, currency, initialBalance = 0) {
+    const symbolMap = { USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥' };
+    userProfile = {
+        name: name,
+        currency: currency,
+        symbol: symbolMap[currency] || '$'
+    };
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    
+    // If initial balance is provided and > 0, add it as a transaction
+    if (initialBalance > 0) {
+        const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+        const newTx = {
+            id: Date.now(),
+            description: '💰 Initial Deposit (Sign-up)',
+            amount: parseFloat(initialBalance),
+            category: 'Salary',
+            type: 'income',
+            date: month + '-01'
+        };
+        // Load existing transactions or initialize
+        let txs = JSON.parse(localStorage.getItem('financeData') || '[]');
+        txs.push(newTx);
+        localStorage.setItem('financeData', JSON.stringify(txs));
+    }
+    
+    showLoginPage(false);
+    initApp();
+    renderAll();
+    updateUIWithUser();
+}
+
+function updateUIWithUser() {
+    // Update sidebar
+    document.getElementById('sidebarUserName').textContent = userProfile.name;
+    const initials = userProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('headerCurrencyDisplay').textContent = userProfile.currency;
+}
+
+function showLoginPage(show) {
+    const loginPage = document.getElementById('loginPage');
+    const appContainer = document.getElementById('appContainer');
+    if (show) {
+        loginPage.classList.remove('hidden');
+        appContainer.style.display = 'none';
+    } else {
+        loginPage.classList.add('hidden');
+        appContainer.style.display = 'flex';
+    }
+}
+
+// Logout
+function logoutUser() {
+    if (confirm('Are you sure you want to logout? Your data will remain saved.')) {
+        localStorage.removeItem('userProfile');
+        location.reload(); // Simple reload to reset state
+    }
+}
+
+// ============================================================
+// 1. SIDEBAR LOGIC
 // ============================================================
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
@@ -10,36 +84,21 @@ function toggleSidebar(forceState) {
     const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
     sidebar.classList.toggle('open', isOpen);
     overlay.classList.toggle('active', isOpen);
-
-    // On desktop, push the main content instead of overlapping
     if (window.innerWidth >= 901) {
         mainContent.classList.toggle('sidebar-open', isOpen);
     } else {
-        mainContent.classList.remove('sidebar-open'); // never push on mobile
+        mainContent.classList.remove('sidebar-open');
     }
     localStorage.setItem('sidebarOpen', isOpen);
 }
 
-// Event listeners for sidebar
-menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleSidebar();
-});
-
-overlay.addEventListener('click', () => {
-    if (window.innerWidth < 901) {
-        toggleSidebar(false);
-    }
-});
-
-// Close sidebar on Escape key
+menuToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
+overlay.addEventListener('click', () => { if (window.innerWidth < 901) toggleSidebar(false); });
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sidebar.classList.contains('open') && window.innerWidth < 901) {
         toggleSidebar(false);
     }
 });
-
-// Handle window resize (switch between push and overlay)
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -50,22 +109,83 @@ window.addEventListener('resize', () => {
         } else {
             mainContent.classList.remove('sidebar-open');
         }
-        if (!isDesktop && sidebar.classList.contains('open')) {
-            // On mobile, overlay handles closing, content should not push
-            mainContent.classList.remove('sidebar-open');
-        }
     }, 150);
 });
 
 // ============================================================
-// 1. STATE
+// 2. SETTINGS MODAL
+// ============================================================
+const settingsModal = document.getElementById('settingsModal');
+const settingsNavTrigger = document.getElementById('settingsNavTrigger');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const settingsName = document.getElementById('settingsName');
+const settingsCurrency = document.getElementById('settingsCurrency');
+
+function openSettings() {
+    settingsName.value = userProfile.name;
+    settingsCurrency.value = userProfile.currency;
+    settingsModal.classList.add('active');
+}
+function closeSettings() {
+    settingsModal.classList.remove('active');
+}
+settingsNavTrigger.addEventListener('click', openSettings);
+closeSettingsBtn.addEventListener('click', closeSettings);
+// Click outside modal to close
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) closeSettings();
+});
+
+saveSettingsBtn.addEventListener('click', () => {
+    const name = settingsName.value.trim();
+    const currency = settingsCurrency.value;
+    if (!name) return showToast('Please enter a name.', 'error');
+    const symbolMap = { USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥' };
+    userProfile.name = name;
+    userProfile.currency = currency;
+    userProfile.symbol = symbolMap[currency] || '$';
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    updateUIWithUser();
+    renderAll(); // Refresh currency symbols in list/chart
+    closeSettings();
+    showToast('✅ Settings updated successfully!', 'success');
+});
+
+logoutBtn.addEventListener('click', () => {
+    closeSettings();
+    logoutUser();
+});
+
+// ============================================================
+// 3. LOGIN HANDLER
+// ============================================================
+document.getElementById('loginBtn').addEventListener('click', () => {
+    const name = document.getElementById('loginName').value.trim();
+    const currency = document.getElementById('loginCurrency').value;
+    const balance = parseFloat(document.getElementById('loginBalance').value) || 0;
+    if (!name) {
+        showToast('Please enter your name.', 'error');
+        return;
+    }
+    saveUserProfile(name, currency, balance);
+});
+
+// Allow Enter key on login
+document.getElementById('loginBalance').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+// ============================================================
+// 4. MAIN APP STATE
 // ============================================================
 let transactions = [];
 let editingId = null;
 let myChart = null;
 
 // ============================================================
-// 2. DOM REFS
+// 5. DOM REFS
 // ============================================================
 const form = document.getElementById('transactionForm');
 const descInput = document.getElementById('description');
@@ -91,19 +211,9 @@ const topCategoryBadge = document.getElementById('topCategoryBadge');
 const toastContainer = document.getElementById('toastContainer');
 
 // ============================================================
-// 3. INIT
+// 6. INIT
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Sidebar Init ---
-    const savedSidebarState = localStorage.getItem('sidebarOpen');
-    const isDesktop = window.innerWidth >= 901;
-    let defaultOpen = isDesktop; // Open by default on desktop
-    if (savedSidebarState !== null) {
-        defaultOpen = savedSidebarState === 'true';
-    }
-    toggleSidebar(defaultOpen);
-
-    // --- Finance Init ---
+function initApp() {
     const now = new Date();
     const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     monthFilter.value = monthStr;
@@ -127,10 +237,32 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('dark');
         darkToggle.textContent = '☀️ Light';
     }
+}
+
+// Check user on load
+document.addEventListener('DOMContentLoaded', () => {
+    const hasUser = loadUserProfile();
+    if (hasUser) {
+        showLoginPage(false);
+        initApp();
+        updateUIWithUser();
+        // Restore sidebar state
+        const savedSidebarState = localStorage.getItem('sidebarOpen');
+        const isDesktop = window.innerWidth >= 901;
+        let defaultOpen = isDesktop;
+        if (savedSidebarState !== null) defaultOpen = savedSidebarState === 'true';
+        toggleSidebar(defaultOpen);
+    } else {
+        showLoginPage(true);
+        // Pre-fill dark mode for login page too
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+        }
+    }
 });
 
 // ============================================================
-// 4. TOAST SYSTEM
+// 7. TOAST
 // ============================================================
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
@@ -146,7 +278,7 @@ function showToast(message, type = 'info') {
 }
 
 // ============================================================
-// 5. LOCAL STORAGE
+// 8. LOCAL STORAGE (Data)
 // ============================================================
 function saveToLocalStorage() {
     localStorage.setItem('financeData', JSON.stringify(transactions));
@@ -158,34 +290,13 @@ function loadFromLocalStorage() {
         transactions = JSON.parse(stored);
         return;
     }
-
-    // Seed with realistic data
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, '0');
-    const prevM = String(today.getMonth()).padStart(2, '0') || '12';
-    const prevY = today.getMonth() === 0 ? y - 1 : y;
-
-    transactions = [
-        { id: Date.now() + 1, description: 'Monthly Salary - Freelance', amount: 4850.00, category: 'Salary', type: 'income', date: `${y}-${m}-01` },
-        { id: Date.now() + 2, description: 'Rent Payment', amount: 1200.00, category: 'Rent', type: 'expense', date: `${y}-${m}-02` },
-        { id: Date.now() + 3, description: 'Electricity Bill', amount: 89.40, category: 'Bills & Utilities', type: 'expense', date: `${y}-${m}-03` },
-        { id: Date.now() + 4, description: 'Morning Coffee & Pastry', amount: 12.75, category: 'Food & Dining', type: 'expense', date: `${y}-${m}-04` },
-        { id: Date.now() + 5, description: 'Uber Ride to Airport', amount: 45.00, category: 'Transport', type: 'expense', date: `${y}-${m}-05` },
-        { id: Date.now() + 6, description: 'Netflix Premium', amount: 19.99, category: 'Entertainment', type: 'expense', date: `${y}-${m}-06` },
-        { id: Date.now() + 7, description: 'Grocery Run - Whole Foods', amount: 156.32, category: 'Food & Dining', type: 'expense', date: `${y}-${m}-07` },
-        { id: Date.now() + 8, description: 'New Office Headphones', amount: 79.99, category: 'Shopping', type: 'expense', date: `${y}-${m}-08` },
-        { id: Date.now() + 9, description: 'Dinner at Italian Bistro', amount: 64.20, category: 'Food & Dining', type: 'expense', date: `${y}-${m}-10` },
-        { id: Date.now() + 10, description: 'Gym Membership', amount: 45.00, category: 'Other', type: 'expense', date: `${y}-${m}-12` },
-        { id: Date.now() + 11, description: 'Water Bill', amount: 34.50, category: 'Bills & Utilities', type: 'expense', date: `${y}-${m}-15` },
-        { id: Date.now() + 12, description: 'Last Month Rent', amount: 1200.00, category: 'Rent', type: 'expense', date: `${prevY}-${prevM}-01` },
-        { id: Date.now() + 13, description: 'Freelance Bonus', amount: 500.00, category: 'Salary', type: 'income', date: `${prevY}-${prevM}-25` },
-    ];
+    // If no data, start empty (user's initial balance was added during signup)
+    transactions = [];
     saveToLocalStorage();
 }
 
 // ============================================================
-// 6. HELPERS
+// 9. HELPERS
 // ============================================================
 function updateMonthLabel(monthVal) {
     if (!monthVal) return;
@@ -197,7 +308,8 @@ function updateMonthLabel(monthVal) {
 }
 
 function formatCurrency(amount) {
-    return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const symbol = userProfile.symbol || '$';
+    return symbol + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function getFilteredTransactions() {
@@ -207,7 +319,7 @@ function getFilteredTransactions() {
 }
 
 // ============================================================
-// 7. RENDER ALL
+// 10. RENDER ALL
 // ============================================================
 function renderAll() {
     const filtered = getFilteredTransactions();
@@ -241,7 +353,7 @@ function renderAll() {
 }
 
 // ============================================================
-// 8. CHART
+// 11. CHART
 // ============================================================
 function renderChart(filtered) {
     const expenses = filtered.filter(tx => tx.type === 'expense');
@@ -271,7 +383,7 @@ function renderChart(filtered) {
             datasets: [{
                 data: dataValues,
                 backgroundColor: colors,
-                borderColor: 'var(--bg-card)',
+                borderColor: getComputedStyle(document.body).getPropertyValue('--bg-card').trim() || '#ffffff',
                 borderWidth: 3,
             }]
         },
@@ -296,7 +408,7 @@ function renderChart(filtered) {
 }
 
 // ============================================================
-// 9. TRANSACTION LIST
+// 12. TRANSACTION LIST
 // ============================================================
 function renderTransactionList(filtered) {
     if (filtered.length === 0) {
@@ -340,7 +452,7 @@ function escapeHTML(text) {
 }
 
 // ============================================================
-// 10. CRUD: CREATE & UPDATE
+// 13. CRUD
 // ============================================================
 function handleFormSubmit(e) {
     e.preventDefault();
@@ -361,7 +473,7 @@ function handleFormSubmit(e) {
         const index = transactions.findIndex(tx => tx.id === editingId);
         if (index !== -1) {
             transactions[index] = { ...transactions[index], description, amount, category, type, date: month + '-01' };
-            showToast('✅ Transaction updated successfully!', 'success');
+            showToast('✅ Transaction updated!', 'success');
         }
         editingId = null;
         submitBtn.textContent = '➕ Add Transaction';
@@ -378,9 +490,6 @@ function handleFormSubmit(e) {
     renderAll();
 }
 
-// ============================================================
-// 11. CRUD: DELETE
-// ============================================================
 function deleteTransaction(id) {
     if (!confirm('Permanently delete this transaction?')) return;
     transactions = transactions.filter(tx => tx.id !== id);
@@ -389,9 +498,6 @@ function deleteTransaction(id) {
     showToast('🗑️ Transaction deleted.', 'info');
 }
 
-// ============================================================
-// 12. CRUD: EDIT
-// ============================================================
 function editTransaction(id) {
     const tx = transactions.find(t => t.id === id);
     if (!tx) return;
@@ -409,12 +515,12 @@ function editTransaction(id) {
 }
 
 // ============================================================
-// 13. DARK MODE
+// 14. DARK MODE
 // ============================================================
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
     darkToggle.textContent = isDark ? '☀️ Light' : '🌙 Dark';
     localStorage.setItem('darkMode', isDark);
-    renderAll(); // Refresh chart colors
+    renderAll();
 }
