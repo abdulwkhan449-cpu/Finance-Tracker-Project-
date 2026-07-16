@@ -1,0 +1,91 @@
+/* ========== REPORTS PAGE SPECIFIC STYLES ========== */
+
+/* Ensure the main content takes full width */
+.main-content {
+    padding: 20px 24px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+    .main-content {
+        padding: 16px 16px;
+    }
+}
+
+/* Summary Cards for Reports - we reuse .card from index.css but ensure text colors */
+.card-income .card-value {
+    color: var(--accent-green);
+}
+.card-expense .card-value {
+    color: var(--accent-red);
+}
+.card-balance .card-value {
+    color: var(--text-primary);
+}
+
+/* Override the row to have proper gaps */
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+@media (max-width: 800px) {
+    .row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* Make the full-width chart look better */
+.chart-box:first-child .chart-wrapper {
+    min-height: 280px;
+}
+
+/* Top Spending List styling */
+#topSpendingList .spending-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-body);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: 0.2s;
+}
+
+#topSpendingList .spending-item:hover {
+    background: var(--hover-bg);
+    transform: translateX(4px);
+}
+
+#topSpendingList .spending-item .category-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#topSpendingList .spending-item .category-amount {
+    font-weight: 700;
+    color: var(--accent-red);
+}
+
+#topSpendingList .spending-item .category-bar {
+    height: 6px;
+    background: var(--accent-purple);
+    border-radius: 10px;
+    margin-top: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Dark mode adjustments for the list */
+body.dark #topSpendingList .spending-item {
+    background: var(--bg-input);
+}
+
+body.dark #topSpendingList .spending-item:hover {
+    background: var(--hover-bg);
+}
