@@ -1,118 +1,7 @@
 /* ============================================================
-   REPORTS PAGE – FIXED: Sidebar pushes content, not overlaps
+   REPORTS PAGE – ONLY Reports-Specific Styles
+   Sidebar behavior comes from index.css (inherited)
    ============================================================ */
-
-/* ----- Reset overrides ----- */
-* {
-    box-sizing: border-box !important;
-}
-
-/* ----- Main App Container ----- */
-.app-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-/* ----- Main Content – behaves like index.html ----- */
-.main-content {
-    padding: 20px 24px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* When sidebar is open on desktop: push content to the right */
-@media (min-width: 901px) {
-    .main-content.sidebar-open {
-        margin-left: 260px !important;
-        width: calc(100% - 260px) !important;  /* This is the key! */
-        max-width: calc(100% - 260px) !important;
-    }
-}
-
-@media (max-width: 900px) {
-    .main-content {
-        padding: 16px 16px !important;
-    }
-    /* On mobile, sidebar overlaps – content stays 100% width */
-    .main-content.sidebar-open {
-        margin-left: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-}
-
-/* ----- Force child containers to stretch full width of their parent ----- */
-.top-header,
-.filter-bar,
-.summary-grid,
-.row,
-.chart-box,
-.form-box,
-.list-box,
-#topSpendingList,
-.chart-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-/* ----- Summary Grid – matches index exactly ----- */
-.summary-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-    gap: 18px !important;
-    margin-bottom: 25px !important;
-}
-
-/* ----- Row – two columns on desktop, one on mobile ----- */
-.row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 25px !important;
-    margin-bottom: 30px !important;
-}
-
-@media (max-width: 800px) {
-    .row {
-        grid-template-columns: 1fr !important;
-        gap: 20px !important;
-    }
-}
-
-/* ----- Chart containers ----- */
-.chart-box {
-    background: var(--bg-card) !important;
-    padding: 28px !important;
-    border-radius: var(--card-radius, 16px) !important;
-    border: 1px solid var(--border-color) !important;
-    box-shadow: var(--shadow) !important;
-}
-
-.chart-box:first-child .chart-wrapper {
-    min-height: 280px !important;
-}
-
-/* ----- Filter Bar ----- */
-.filter-bar {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
-    gap: 15px !important;
-    background: var(--bg-card) !important;
-    padding: 12px 20px !important;
-    border-radius: 14px !important;
-    border: 1px solid var(--border-color) !important;
-    margin-bottom: 25px !important;
-    box-shadow: var(--shadow) !important;
-}
 
 /* ----- Top Spending List ----- */
 #topSpendingList .spending-item {
@@ -151,7 +40,7 @@
     transition: width 0.3s ease !important;
 }
 
-/* ----- Dark Mode ----- */
+/* ----- Dark Mode for Top Spending List ----- */
 body.dark #topSpendingList .spending-item {
     background: var(--bg-input) !important;
 }
@@ -159,7 +48,18 @@ body.dark #topSpendingList .spending-item:hover {
     background: var(--hover-bg) !important;
 }
 
-/* ----- Prevent horizontal overflow ----- */
-body {
-    overflow-x: hidden !important;
+/* ----- Chart Boxes ----- */
+.chart-box:first-child .chart-wrapper {
+    min-height: 280px !important;
+}
+
+/* ----- Summary Cards – color overrides ----- */
+.card-income .card-value {
+    color: var(--accent-green) !important;
+}
+.card-expense .card-value {
+    color: var(--accent-red) !important;
+}
+.card-balance .card-value {
+    color: var(--text-primary) !important;
 }
