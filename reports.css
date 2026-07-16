@@ -1,20 +1,46 @@
 /* ========== REPORTS PAGE SPECIFIC STYLES ========== */
 
-/* Ensure the main content takes full width */
+/* Force the entire app container to take full width */
+.app-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Main content - exactly like index.html */
 .main-content {
-    padding: 20px 24px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+    padding: 20px 24px !important;   /* Reduced padding for full width */
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 900px) {
     .main-content {
-        padding: 16px 16px;
+        padding: 16px 16px !important; /* Even less on mobile */
     }
 }
 
-/* Summary Cards for Reports - we reuse .card from index.css but ensure text colors */
+/* Force all containers to stretch full width */
+.filter-bar,
+.summary-grid,
+.row,
+.list-box,
+.chart-box,
+.form-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Summary Cards - matches index exactly */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
 .card-income .card-value {
     color: var(--accent-green);
 }
@@ -25,13 +51,12 @@
     color: var(--text-primary);
 }
 
-/* Override the row to have proper gaps */
+/* Row - now matches index exactly (two columns, full width) */
 .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
     margin-bottom: 30px;
-    width: 100%;
 }
 
 @media (max-width: 800px) {
@@ -56,6 +81,8 @@
     border-radius: 10px;
     border: 1px solid var(--border-color);
     transition: 0.2s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #topSpendingList .spending-item:hover {
@@ -81,11 +108,10 @@
     transition: width 0.3s ease;
 }
 
-/* Dark mode adjustments for the list */
+/* Dark mode adjustments */
 body.dark #topSpendingList .spending-item {
     background: var(--bg-input);
 }
-
 body.dark #topSpendingList .spending-item:hover {
     background: var(--hover-bg);
 }
