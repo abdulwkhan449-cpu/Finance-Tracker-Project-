@@ -1,18 +1,11 @@
 /* ============================================================
    REPORTS PAGE – ONLY Reports-Specific Styles
    Sidebar behavior (push/overlay) comes from index.css
+   DO NOT override width or margin of main content here!
    ============================================================ */
 
-/* ----- Main content padding matches index.html EXACTLY ----- */
-.main-content {
-    padding: 20px 24px !important;
-}
-
-@media (max-width: 900px) {
-    .main-content {
-        padding: 16px 16px !important;
-    }
-}
+/* ----- Main content – let index.css handle everything ----- */
+/* We don't touch .main-content width or margin here */
 
 /* ----- Top Spending List ----- */
 #topSpendingList .spending-item {
@@ -73,4 +66,20 @@ body.dark #topSpendingList .spending-item:hover {
 }
 .card-balance .card-value {
     color: var(--text-primary) !important;
+}
+
+/* ----- Ensure chart containers are full width of their parent ----- */
+.chart-box {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.chart-wrapper {
+    width: 100% !important;
+}
+
+/* ----- Filter bar – full width of parent ----- */
+.filter-bar {
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
