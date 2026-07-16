@@ -1,4 +1,63 @@
 // ============================================================
+// 0. SIDEBAR SLIDER LOGIC (Added)
+// ============================================================
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+const menuToggle = document.getElementById('menuToggle');
+const mainContent = document.getElementById('mainContent');
+
+function toggleSidebar(forceState) {
+    const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', isOpen);
+    overlay.classList.toggle('active', isOpen);
+
+    // On desktop, push the main content instead of overlapping
+    if (window.innerWidth >= 901) {
+        mainContent.classList.toggle('sidebar-open', isOpen);
+    } else {
+        mainContent.classList.remove('sidebar-open'); // never push on mobile
+    }
+    localStorage.setItem('sidebarOpen', isOpen);
+}
+
+// Event listeners for sidebar
+menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleSidebar();
+});
+
+overlay.addEventListener('click', () => {
+    if (window.innerWidth < 901) {
+        toggleSidebar(false);
+    }
+});
+
+// Close sidebar on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open') && window.innerWidth < 901) {
+        toggleSidebar(false);
+    }
+});
+
+// Handle window resize (switch between push and overlay)
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const isDesktop = window.innerWidth >= 901;
+        if (isDesktop && sidebar.classList.contains('open')) {
+            mainContent.classList.add('sidebar-open');
+        } else {
+            mainContent.classList.remove('sidebar-open');
+        }
+        if (!isDesktop && sidebar.classList.contains('open')) {
+            // On mobile, overlay handles closing, content should not push
+            mainContent.classList.remove('sidebar-open');
+        }
+    }, 150);
+});
+
+// ============================================================
 // 1. STATE
 // ============================================================
 let transactions = [];
@@ -35,6 +94,16 @@ const toastContainer = document.getElementById('toastContainer');
 // 3. INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Sidebar Init ---
+    const savedSidebarState = localStorage.getItem('sidebarOpen');
+    const isDesktop = window.innerWidth >= 901;
+    let defaultOpen = isDesktop; // Open by default on desktop
+    if (savedSidebarState !== null) {
+        defaultOpen = savedSidebarState === 'true';
+    }
+    toggleSidebar(defaultOpen);
+
+    // --- Finance Init ---
     const now = new Date();
     const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     monthFilter.value = monthStr;
@@ -61,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================
-// 4. TOAST SYSTEM (Replaces alert())
+// 4. TOAST SYSTEM
 // ============================================================
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
@@ -90,7 +159,7 @@ function loadFromLocalStorage() {
         return;
     }
 
-    // ---- SEED WITH SUPER REALISTIC DATA ----
+    // Seed with realistic data
     const today = new Date();
     const y = today.getFullYear();
     const m = String(today.getMonth() + 1).padStart(2, '0');
@@ -109,7 +178,6 @@ function loadFromLocalStorage() {
         { id: Date.now() + 9, description: 'Dinner at Italian Bistro', amount: 64.20, category: 'Food & Dining', type: 'expense', date: `${y}-${m}-10` },
         { id: Date.now() + 10, description: 'Gym Membership', amount: 45.00, category: 'Other', type: 'expense', date: `${y}-${m}-12` },
         { id: Date.now() + 11, description: 'Water Bill', amount: 34.50, category: 'Bills & Utilities', type: 'expense', date: `${y}-${m}-15` },
-        // Some previous month transactions to test filter
         { id: Date.now() + 12, description: 'Last Month Rent', amount: 1200.00, category: 'Rent', type: 'expense', date: `${prevY}-${prevM}-01` },
         { id: Date.now() + 13, description: 'Freelance Bonus', amount: 500.00, category: 'Salary', type: 'income', date: `${prevY}-${prevM}-25` },
     ];
@@ -144,7 +212,6 @@ function getFilteredTransactions() {
 function renderAll() {
     const filtered = getFilteredTransactions();
 
-    // Summary
     let totalIncome = 0, totalExpense = 0;
     filtered.forEach(tx => {
         if (tx.type === 'income') totalIncome += tx.amount;
@@ -158,7 +225,6 @@ function renderAll() {
     balanceDisplay.textContent = formatCurrency(balance);
     savingsDisplay.textContent = savingsRate.toFixed(0) + '%';
 
-    // Count & Top Category
     txCountBadge.textContent = `📋 ${filtered.length} Transactions`;
     const expenses = filtered.filter(tx => tx.type === 'expense');
     const catMap = {};
@@ -175,7 +241,7 @@ function renderAll() {
 }
 
 // ============================================================
-// 8. CHART (Elegant fixed color palette)
+// 8. CHART
 // ============================================================
 function renderChart(filtered) {
     const expenses = filtered.filter(tx => tx.type === 'expense');
@@ -192,7 +258,6 @@ function renderChart(filtered) {
     }
     chartEmptyMsg.style.display = 'none';
 
-    // Professional muted palette
     const palette = ['#7c3aed', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'];
     const colors = labels.map((_, i) => palette[i % palette.length]);
 
@@ -344,13 +409,12 @@ function editTransaction(id) {
 }
 
 // ============================================================
-// 13. DARK MODE TOGGLE (with chart refresh)
+// 13. DARK MODE
 // ============================================================
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
     darkToggle.textContent = isDark ? '☀️ Light' : '🌙 Dark';
     localStorage.setItem('darkMode', isDark);
-    // Re-render chart to fix legend text color
-    renderAll();
+    renderAll(); // Refresh chart colors
 }
