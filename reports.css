@@ -1,117 +1,150 @@
-/* ========== REPORTS PAGE SPECIFIC STYLES ========== */
+/* ============================================================
+   REPORTS PAGE – FORCE 100% FULL WIDTH
+   This file overrides all previous styles
+   ============================================================ */
 
-/* Force the entire app container to take full width */
+/* ----- 1. Reset and Base Overrides ----- */
+* {
+    box-sizing: border-box !important;
+}
+
+/* ----- 2. Main App Container ----- */
 .app-container {
     width: 100% !important;
     max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-/* Main content - exactly like index.html */
+/* ----- 3. Main Content – 100% width ----- */
 .main-content {
-    padding: 20px 24px !important;   /* Reduced padding for full width */
+    padding: 20px 24px !important;
     width: 100% !important;
     max-width: 100% !important;
+    margin: 0 !important;
     box-sizing: border-box !important;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 900px) {
     .main-content {
-        padding: 16px 16px !important; /* Even less on mobile */
+        padding: 16px 16px !important;
     }
 }
 
-/* Force all containers to stretch full width */
+/* ----- 4. Force every child container to stretch full width ----- */
+.top-header,
 .filter-bar,
 .summary-grid,
 .row,
-.list-box,
 .chart-box,
-.form-box {
+.form-box,
+.list-box,
+#topSpendingList,
+.chart-wrapper {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
 
-/* Summary Cards - matches index exactly */
+/* ----- 5. Summary Grid – exactly like index ----- */
 .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 18px;
-    margin-bottom: 25px;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 18px !important;
+    margin-bottom: 25px !important;
 }
 
-.card-income .card-value {
-    color: var(--accent-green);
-}
-.card-expense .card-value {
-    color: var(--accent-red);
-}
-.card-balance .card-value {
-    color: var(--text-primary);
-}
-
-/* Row - now matches index exactly (two columns, full width) */
+/* ----- 6. Row – two columns on desktop, one on mobile ----- */
 .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    margin-bottom: 30px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 25px !important;
+    margin-bottom: 30px !important;
 }
 
 @media (max-width: 800px) {
     .row {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
     }
 }
 
-/* Make the full-width chart look better */
-.chart-box:first-child .chart-wrapper {
-    min-height: 280px;
+/* ----- 7. Chart containers – full width ----- */
+.chart-box {
+    background: var(--bg-card) !important;
+    padding: 28px !important;
+    border-radius: var(--card-radius, 16px) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow) !important;
 }
 
-/* Top Spending List styling */
+.chart-box:first-child .chart-wrapper {
+    min-height: 280px !important;
+}
+
+/* ----- 8. Filter Bar – full width ----- */
+.filter-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+    background: var(--bg-card) !important;
+    padding: 12px 20px !important;
+    border-radius: 14px !important;
+    border: 1px solid var(--border-color) !important;
+    margin-bottom: 25px !important;
+    box-shadow: var(--shadow) !important;
+}
+
+/* ----- 9. Top Spending List – full width items ----- */
 #topSpendingList .spending-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    background: var(--bg-body);
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    transition: 0.2s;
-    width: 100%;
-    box-sizing: border-box;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    background: var(--bg-body) !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color) !important;
+    transition: 0.2s !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 #topSpendingList .spending-item:hover {
-    background: var(--hover-bg);
-    transform: translateX(4px);
+    background: var(--hover-bg) !important;
+    transform: translateX(4px) !important;
 }
 
 #topSpendingList .spending-item .category-name {
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
 }
 
 #topSpendingList .spending-item .category-amount {
-    font-weight: 700;
-    color: var(--accent-red);
+    font-weight: 700 !important;
+    color: var(--accent-red) !important;
 }
 
 #topSpendingList .spending-item .category-bar {
-    height: 6px;
-    background: var(--accent-purple);
-    border-radius: 10px;
-    margin-top: 4px;
-    transition: width 0.3s ease;
+    height: 6px !important;
+    background: var(--accent-purple) !important;
+    border-radius: 10px !important;
+    margin-top: 4px !important;
+    transition: width 0.3s ease !important;
 }
 
-/* Dark mode adjustments */
+/* ----- 10. Dark Mode overrides ----- */
 body.dark #topSpendingList .spending-item {
-    background: var(--bg-input);
+    background: var(--bg-input) !important;
 }
 body.dark #topSpendingList .spending-item:hover {
-    background: var(--hover-bg);
+    background: var(--hover-bg) !important;
+}
+
+/* ----- 11. Fix for any hidden overflow ----- */
+body {
+    overflow-x: hidden !important;
 }
