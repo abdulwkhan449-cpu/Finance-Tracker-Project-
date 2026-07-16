@@ -1,0 +1,192 @@
+/* ============================================================
+   BUDGETS PAGE – Specific Styles Only
+   Sidebar behavior comes from index.css
+   ============================================================ */
+
+/* ----- Budget List Items ----- */
+.budget-item {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.budget-item:hover {
+    border-color: var(--accent-purple);
+    box-shadow: var(--shadow-hover);
+}
+
+.budget-item .budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.budget-item .budget-category {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.budget-item .budget-category i {
+    margin-right: 8px;
+    color: var(--accent-purple);
+}
+
+.budget-item .budget-numbers {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.budget-item .budget-limit {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.budget-item .budget-spent {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.budget-item .budget-spent.under {
+    color: var(--accent-green);
+}
+
+.budget-item .budget-spent.over {
+    color: var(--accent-red);
+}
+
+.budget-item .budget-spent.exact {
+    color: var(--accent-purple);
+}
+
+.budget-item .budget-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.budget-item .budget-actions button {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+    transition: 0.2s;
+}
+
+.budget-item .budget-actions .edit-budget-btn {
+    background: #f59e0b;
+    color: white;
+}
+
+.budget-item .budget-actions .edit-budget-btn:hover {
+    background: #d97706;
+}
+
+.budget-item .budget-actions .delete-budget-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.budget-item .budget-actions .delete-budget-btn:hover {
+    background: #dc2626;
+}
+
+/* ----- Progress Bar ----- */
+.budget-progress {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-body);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.budget-progress .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+.budget-progress .progress-fill.safe {
+    background: var(--accent-green);
+}
+
+.budget-progress .progress-fill.warning {
+    background: #f59e0b;
+}
+
+.budget-progress .progress-fill.danger {
+    background: var(--accent-red);
+}
+
+/* ----- Empty State ----- */
+.empty-budgets {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px 20px;
+}
+
+.empty-budgets i {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    display: block;
+    color: var(--border-color);
+}
+
+.empty-budgets h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.empty-budgets p {
+    font-size: 0.9rem;
+}
+
+/* ----- Modal fixes for budget modal ----- */
+#budgetModal .modal-content {
+    max-width: 420px;
+}
+
+/* ----- Responsive tweaks ----- */
+@media (max-width: 600px) {
+    .budget-item .budget-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .budget-item .budget-numbers {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .budget-item .budget-actions {
+        justify-content: flex-end;
+        margin-top: 4px;
+    }
+}
+
+/* ----- Dark mode adjustments ----- */
+body.dark .budget-item {
+    background: var(--bg-card);
+}
+
+body.dark .budget-item:hover {
+    border-color: var(--accent-purple);
+}
