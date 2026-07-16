@@ -1,5 +1,48 @@
 // ============================================================
-// SIDEBAR LOGIC (IDENTICAL to index.js)
+// 0. USER PROFILE & GLOBAL STATE
+// ============================================================
+let userProfile = { name: 'Guest', currency: 'USD', symbol: '$' };
+let monthlyChart = null;
+let categoryChart = null;
+
+const CURRENCY_SYMBOLS = {
+    PKR: 'Rs',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    JPY: '¥'
+};
+
+// ============================================================
+// 1. LOAD USER PROFILE & THEME
+// ============================================================
+function loadUserProfile() {
+    const stored = localStorage.getItem('userProfile');
+    if (stored) {
+        userProfile = JSON.parse(stored);
+        if (!userProfile.symbol || !CURRENCY_SYMBOLS[userProfile.currency]) {
+            userProfile.symbol = CURRENCY_SYMBOLS[userProfile.currency] || '$';
+        }
+        return true;
+    }
+    return false;
+}
+
+function updateUIWithUser() {
+    document.getElementById('sidebarUserName').textContent = userProfile.name;
+    const initials = userProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('headerCurrencyDisplay').textContent = userProfile.currency;
+}
+
+function formatCurrency(amount) {
+    const symbol = userProfile.symbol || '$';
+    return symbol + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// ============================================================
+// 2. SIDEBAR LOGIC
 // ============================================================
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
@@ -10,7 +53,6 @@ function toggleSidebar(forceState) {
     const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
     sidebar.classList.toggle('open', isOpen);
 
-    // Only show overlay on mobile (under 900px)
     if (window.innerWidth < 901) {
         overlay.classList.toggle('active', isOpen);
     } else {
@@ -50,4 +92,438 @@ window.addEventListener('resize', () => {
             overlay.classList.remove('active');
         }
     }, 150);
+});
+
+// ============================================================
+// 3. SETTINGS MODAL
+// ============================================================
+const settingsModal = document.getElementById('settingsModal');
+const settingsNavTrigger = document.getElementById('settingsNavTrigger');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const settingsName = document.getElementById('settingsName');
+const settingsCurrency = document.getElementById('settingsCurrency');
+
+function openSettings() {
+    settingsName.value = userProfile.name;
+    settingsCurrency.value = userProfile.currency;
+    settingsModal.classList.add('active');
+}
+function closeSettings() {
+    settingsModal.classList.remove('active');
+}
+settingsNavTrigger.addEventListener('click', openSettings);
+closeSettingsBtn.addEventListener('click', closeSettings);
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) closeSettings();
+});
+
+saveSettingsBtn.addEventListener('click', () => {
+    const name = settingsName.value.trim();
+    const currency = settingsCurrency.value;
+    if (!name) return showToast('Please enter a name.', 'error');
+    
+    userProfile.name = name;
+    userProfile.currency = currency;
+    userProfile.symbol = CURRENCY_SYMBOLS[currency] || '$';
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    updateUIWithUser();
+    renderAll();
+    closeSettings();
+    showToast('✅ Settings updated successfully!', 'success');
+});
+
+logoutBtn.addEventListener('click', () => {
+    closeSettings();
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('userProfile');
+        window.location.href = 'index.html';
+    }
+});
+
+// ============================================================
+// 4. TOAST SYSTEM
+// ============================================================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(40px)';
+        toast.style.transition = '0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ============================================================
+// 5. DARK MODE
+// ============================================================
+const darkToggle = document.getElementById('darkModeToggle');
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    darkToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light' : '<i class="fas fa-moon"></i> Dark';
+    localStorage.setItem('darkMode', isDark);
+    renderAll(); // Re-render charts to fix colors
+}
+
+// ============================================================
+// 6. LOAD DATA & RENDER
+// ============================================================
+function loadFromLocalStorage() {
+    const stored = localStorage.getItem('financeData');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return [];
+}
+
+function getAvailableYears(transactions) {
+    const years = new Set();
+    transactions.forEach(tx => {
+        if (tx.date) {
+            const year = tx.date.substring(0, 4);
+            years.add(year);
+        }
+    });
+    return Array.from(years).sort();
+}
+
+function populateYearFilter(years) {
+    const select = document.getElementById('yearFilter');
+    const currentYear = new Date().getFullYear().toString();
+    select.innerHTML = '';
+    
+    if (years.length === 0) {
+        // If no transactions, add current year
+        years = [currentYear];
+    }
+    
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear || year === years[years.length - 1]) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+}
+
+function getTransactionsForYear(transactions, year) {
+    return transactions.filter(tx => tx.date && tx.date.startsWith(year));
+}
+
+function renderAll() {
+    const transactions = loadFromLocalStorage();
+    const years = getAvailableYears(transactions);
+    populateYearFilter(years);
+    
+    const selectedYear = document.getElementById('yearFilter').value;
+    const yearData = getTransactionsForYear(transactions, selectedYear);
+    
+    updateSummaryCards(yearData);
+    renderMonthlyChart(yearData);
+    renderCategoryChart(yearData);
+    renderTopSpending(yearData);
+    updateUIWithUser();
+    updateCountBadge(yearData.length);
+    updateYearDisplay(selectedYear);
+}
+
+function updateYearDisplay(year) {
+    document.getElementById('currentYearDisplay').textContent = `Overview for ${year}`;
+}
+
+function updateCountBadge(count) {
+    document.getElementById('txCountBadge').innerHTML = `<i class="fas fa-list"></i> ${count} Transactions`;
+}
+
+// ============================================================
+// 7. SUMMARY CARDS
+// ============================================================
+function updateSummaryCards(transactions) {
+    let totalIncome = 0, totalExpense = 0;
+    transactions.forEach(tx => {
+        if (tx.type === 'income') totalIncome += tx.amount;
+        else totalExpense += tx.amount;
+    });
+    const net = totalIncome - totalExpense;
+    
+    document.getElementById('totalIncomeDisplay').textContent = formatCurrency(totalIncome);
+    document.getElementById('totalExpenseDisplay').textContent = formatCurrency(totalExpense);
+    document.getElementById('netSavingsDisplay').textContent = formatCurrency(net);
+    
+    const statusEl = document.getElementById('netStatus');
+    if (net >= 0) {
+        statusEl.innerHTML = `<i class="fas fa-arrow-up text-green-500"></i> ${formatCurrency(net)} saved`;
+        statusEl.style.color = 'var(--accent-green)';
+    } else {
+        statusEl.innerHTML = `<i class="fas fa-arrow-down text-red-500"></i> ${formatCurrency(Math.abs(net))} deficit`;
+        statusEl.style.color = 'var(--accent-red)';
+    }
+}
+
+// ============================================================
+// 8. MONTHLY CHART (Bar Chart)
+// ============================================================
+function renderMonthlyChart(transactions) {
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    
+    // Destroy existing chart
+    if (monthlyChart) {
+        monthlyChart.destroy();
+        monthlyChart = null;
+    }
+    
+    if (transactions.length === 0) {
+        monthlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['No Data'],
+                datasets: [
+                    { label: 'Income', data: [0], backgroundColor: '#10b981' },
+                    { label: 'Expenses', data: [0], backgroundColor: '#ef4444' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top', labels: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || '#64748b' } }
+                }
+            }
+        });
+        return;
+    }
+    
+    // Group by month
+    const monthMap = {};
+    transactions.forEach(tx => {
+        const month = tx.date.substring(0, 7); // YYYY-MM
+        if (!monthMap[month]) {
+            monthMap[month] = { income: 0, expense: 0 };
+        }
+        if (tx.type === 'income') {
+            monthMap[month].income += tx.amount;
+        } else {
+            monthMap[month].expense += tx.amount;
+        }
+    });
+    
+    const sortedMonths = Object.keys(monthMap).sort();
+    const monthLabels = sortedMonths.map(m => {
+        const [year, month] = m.split('-');
+        return new Date(year, month - 1).toLocaleString('default', { month: 'short' }) + ` '${year.slice(2)}`;
+    });
+    const incomeData = sortedMonths.map(m => monthMap[m].income);
+    const expenseData = sortedMonths.map(m => monthMap[m].expense);
+    
+    const textColor = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || '#64748b';
+    
+    monthlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets: [
+                {
+                    label: 'Income',
+                    data: incomeData,
+                    backgroundColor: '#10b981',
+                    borderRadius: 6,
+                },
+                {
+                    label: 'Expenses',
+                    data: expenseData,
+                    backgroundColor: '#ef4444',
+                    borderRadius: 6,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { color: textColor, font: { weight: '600' } }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: textColor }
+                },
+                x: {
+                    ticks: { color: textColor }
+                }
+            }
+        }
+    });
+}
+
+// ============================================================
+// 9. CATEGORY CHART (Doughnut)
+// ============================================================
+function renderCategoryChart(transactions) {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    const emptyMsg = document.getElementById('chartEmptyMsg');
+    
+    if (categoryChart) {
+        categoryChart.destroy();
+        categoryChart = null;
+    }
+    
+    // Filter expenses only
+    const expenses = transactions.filter(tx => tx.type === 'expense');
+    if (expenses.length === 0) {
+        emptyMsg.style.display = 'block';
+        // Show empty chart
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['No Expenses'],
+                datasets: [{ data: [1], backgroundColor: '#e2e8f0' }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '60%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || '#64748b' } }
+                }
+            }
+        });
+        return;
+    }
+    emptyMsg.style.display = 'none';
+    
+    // Group by category
+    const catMap = {};
+    expenses.forEach(tx => {
+        catMap[tx.category] = (catMap[tx.category] || 0) + tx.amount;
+    });
+    
+    const labels = Object.keys(catMap);
+    const dataValues = Object.values(catMap);
+    const palette = ['#7c3aed', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'];
+    const colors = labels.map((_, i) => palette[i % palette.length]);
+    
+    const textColor = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || '#64748b';
+    
+    categoryChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: colors,
+                borderColor: getComputedStyle(document.body).getPropertyValue('--bg-card').trim() || '#ffffff',
+                borderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: textColor,
+                        font: { size: 11, weight: '500' },
+                        padding: 12,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ============================================================
+// 10. TOP SPENDING LIST
+// ============================================================
+function renderTopSpending(transactions) {
+    const container = document.getElementById('topSpendingList');
+    const expenses = transactions.filter(tx => tx.type === 'expense');
+    
+    if (expenses.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                <i class="fas fa-coffee text-4xl mb-2 block"></i>
+                No expenses this year. Enjoy your savings!
+            </div>
+        `;
+        return;
+    }
+    
+    // Group by category and sum
+    const catMap = {};
+    expenses.forEach(tx => {
+        catMap[tx.category] = (catMap[tx.category] || 0) + tx.amount;
+    });
+    
+    // Sort by amount descending
+    const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+    const total = sorted.reduce((sum, [, amount]) => sum + amount, 0);
+    
+    let html = '';
+    sorted.forEach(([category, amount], index) => {
+        const percentage = (amount / total) * 100;
+        const barColor = ['#7c3aed', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'][index % 8];
+        
+        html += `
+            <div class="spending-item">
+                <div style="flex: 1;">
+                    <div class="flex justify-between items-center">
+                        <span class="category-name"><i class="fas fa-circle text-[10px]" style="color: ${barColor};"></i> ${category}</span>
+                        <span class="category-amount">${formatCurrency(amount)}</span>
+                    </div>
+                    <div class="category-bar" style="width: ${percentage}%; background: ${barColor};"></div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// ============================================================
+// 11. INITIALIZATION
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const hasUser = loadUserProfile();
+    if (!hasUser) {
+        // Redirect to login if no user profile
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    // Set up dark mode
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+        darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light';
+    }
+    darkToggle.addEventListener('click', toggleDarkMode);
+    
+    // Load data and render
+    renderAll();
+    
+    // Event listeners
+    document.getElementById('yearFilter').addEventListener('change', renderAll);
+    
+    // Restore sidebar state
+    const savedSidebarState = localStorage.getItem('sidebarOpen');
+    const isDesktop = window.innerWidth >= 901;
+    let defaultOpen = isDesktop;
+    if (savedSidebarState !== null) defaultOpen = savedSidebarState === 'true';
+    toggleSidebar(defaultOpen);
+    
+    updateUIWithUser();
 });
