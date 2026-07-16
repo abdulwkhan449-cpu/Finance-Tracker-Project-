@@ -8,7 +8,7 @@
     font-family: 'Inter', sans-serif;
 }
 
-/* Light Mode Variables */
+/* Light Mode */
 :root {
     --bg-body: #f1f5f9;
     --bg-sidebar: #ffffff;
@@ -25,11 +25,11 @@
     --hover-bg: #f1f5f9;
     --income-color: #10b981;
     --expense-color: #ef4444;
-    --card-border-radius: 16px;
+    --card-radius: 16px;
     --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark Mode Variables */
+/* Dark Mode */
 body.dark {
     --bg-body: #0f172a;
     --bg-sidebar: #1e293b;
@@ -49,42 +49,42 @@ body {
     color: var(--text-primary);
     transition: background 0.3s, color 0.3s;
     min-height: 100vh;
-    display: flex;
+    overflow-x: hidden;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 6px;
-}
-::-webkit-scrollbar-track {
-    background: var(--bg-body);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 10px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-body); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-/* -------------------- APP LAYOUT (Sidebar + Main) -------------------- */
+/* -------------------- APP LAYOUT -------------------- */
 .app-container {
-    display: flex;
-    width: 100%;
+    position: relative;
     min-height: 100vh;
 }
 
-/* Sidebar */
+/* ========== SIDEBAR SLIDER ========== */
 .sidebar {
-    width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    transition: background 0.3s, border 0.3s;
-    flex-shrink: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.08);
+    overflow-y: auto;
 }
+.sidebar.open {
+    transform: translateX(0);
+}
+
+/* Sidebar Content */
 .logo {
     font-size: 1.5rem;
     font-weight: 700;
@@ -155,24 +155,42 @@ body {
     margin-top: 4px;
 }
 
-/* Main Content */
+/* ========== OVERLAY ========== */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+.overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ========== MAIN CONTENT ========== */
 .main-content {
-    flex: 1;
     padding: 30px 40px;
-    max-width: calc(100% - 220px);
-    transition: 0.3s;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 100%;
+}
+
+/* Push main content when sidebar is open on desktop */
+@media (min-width: 901px) {
+    .main-content.sidebar-open {
+        margin-left: 260px;
+    }
 }
 @media (max-width: 900px) {
-    .sidebar {
-        display: none;
-    }
     .main-content {
-        max-width: 100%;
         padding: 20px;
     }
 }
 
-/* -------------------- TOP HEADER -------------------- */
+/* ========== TOP HEADER ========== */
 .top-header {
     display: flex;
     justify-content: space-between;
@@ -195,6 +213,30 @@ body {
     gap: 12px;
     align-items: center;
 }
+
+/* Hamburger */
+.hamburger {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    padding: 0 12px;
+    height: 42px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    line-height: 1;
+    box-shadow: var(--shadow);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hamburger:hover {
+    background: var(--hover-bg);
+    transform: scale(1.03);
+}
+
 .dark-toggle {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -212,7 +254,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* -------------------- SUMMARY CARDS -------------------- */
+/* ========== SUMMARY CARDS ========== */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -222,7 +264,7 @@ body {
 .card {
     background: var(--bg-card);
     padding: 20px 24px;
-    border-radius: var(--card-border-radius);
+    border-radius: var(--card-radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
     transition: var(--transition);
@@ -249,20 +291,12 @@ body {
     color: var(--text-secondary);
     margin-top: 8px;
 }
-.card-balance .card-value {
-    color: var(--text-primary);
-}
-.card-income .card-value {
-    color: var(--accent-green);
-}
-.card-expense .card-value {
-    color: var(--accent-red);
-}
-.card-savings .card-value {
-    color: var(--accent-purple);
-}
+.card-balance .card-value { color: var(--text-primary); }
+.card-income .card-value { color: var(--accent-green); }
+.card-expense .card-value { color: var(--accent-red); }
+.card-savings .card-value { color: var(--accent-purple); }
 
-/* -------------------- FILTER BAR -------------------- */
+/* ========== FILTER BAR ========== */
 .filter-bar {
     display: flex;
     justify-content: space-between;
@@ -306,7 +340,7 @@ body {
     border: 1px solid var(--border-color);
 }
 
-/* -------------------- ROW (Form + Chart) -------------------- */
+/* ========== ROW (Form + Chart) ========== */
 .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -314,16 +348,14 @@ body {
     margin-bottom: 30px;
 }
 @media (max-width: 800px) {
-    .row {
-        grid-template-columns: 1fr;
-    }
+    .row { grid-template-columns: 1fr; }
 }
 
 /* Form */
 .form-box {
     background: var(--bg-card);
     padding: 28px;
-    border-radius: var(--card-border-radius);
+    border-radius: var(--card-radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
 }
@@ -368,7 +400,6 @@ body {
     color: var(--text-primary);
 }
 
-/* Buttons */
 .btn {
     padding: 12px 24px;
     border: none;
@@ -393,7 +424,7 @@ body {
 .chart-box {
     background: var(--bg-card);
     padding: 28px;
-    border-radius: var(--card-border-radius);
+    border-radius: var(--card-radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
     display: flex;
@@ -421,11 +452,11 @@ body {
     padding: 20px 0;
 }
 
-/* -------------------- TRANSACTION LIST -------------------- */
+/* ========== TRANSACTION LIST ========== */
 .list-box {
     background: var(--bg-card);
     padding: 25px 28px;
-    border-radius: var(--card-border-radius);
+    border-radius: var(--card-radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
 }
@@ -467,25 +498,16 @@ body {
     padding-right: 26px;
 }
 @keyframes fadeSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-
 .tx-info {
     display: flex;
     flex-direction: column;
     flex: 2;
     min-width: 140px;
 }
-.tx-desc {
-    font-weight: 600;
-}
+.tx-desc { font-weight: 600; }
 .tx-meta {
     display: flex;
     gap: 12px;
@@ -505,12 +527,8 @@ body {
     min-width: 80px;
     text-align: right;
 }
-.income-text {
-    color: var(--income-color);
-}
-.expense-text {
-    color: var(--expense-color);
-}
+.income-text { color: var(--income-color); }
+.expense-text { color: var(--expense-color); }
 .tx-actions {
     display: flex;
     gap: 6px;
@@ -545,7 +563,7 @@ body {
     font-style: italic;
 }
 
-/* -------------------- TOAST NOTIFICATIONS -------------------- */
+/* ========== TOASTS ========== */
 .toast-container {
     position: fixed;
     bottom: 30px;
@@ -568,22 +586,10 @@ body {
     animation: slideIn 0.4s ease;
     border: 1px solid var(--border-color);
 }
-.toast.success {
-    border-left-color: var(--accent-green);
-}
-.toast.error {
-    border-left-color: var(--accent-red);
-}
-.toast.info {
-    border-left-color: var(--accent-purple);
-}
+.toast.success { border-left-color: var(--accent-green); }
+.toast.error { border-left-color: var(--accent-red); }
+.toast.info { border-left-color: var(--accent-purple); }
 @keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
 }
