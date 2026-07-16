@@ -89,6 +89,9 @@ body {
     text-align: center;
     margin-bottom: 8px;
 }
+.login-logo i {
+    color: var(--accent-purple);
+}
 .login-sub {
     text-align: center;
     color: var(--text-secondary);
@@ -193,6 +196,7 @@ body {
 .app-container {
     position: relative;
     min-height: 100vh;
+    width: 100%;
 }
 
 /* Sidebar */
@@ -233,6 +237,7 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: 10px;
+    font-size: 1.2rem;
 }
 .sidebar-nav {
     display: flex;
@@ -248,6 +253,11 @@ body {
     font-weight: 500;
     transition: 0.2s;
     cursor: pointer;
+}
+.nav-item i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
 }
 .nav-item:hover {
     background: var(--hover-bg);
@@ -296,28 +306,33 @@ body {
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease;
-    /* NO backdrop-filter: blur() here - keeps content crisp */
 }
 .overlay.active {
     display: block;
     opacity: 1;
 }
 
+/* ========== MAIN CONTENT (FULL WIDTH FIX) ========== */
 .main-content {
-    padding: 30px 40px;
+    padding: 20px 24px;  /* Reduced padding */
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
 }
+
 @media (min-width: 901px) {
     .main-content.sidebar-open {
         margin-left: 260px;
     }
 }
 @media (max-width: 900px) {
-    .main-content { padding: 20px; }
+    .main-content {
+        padding: 16px 16px; /* Even less padding on mobile for full width */
+    }
 }
 
-/* Header */
+/* ========== HEADER ========== */
 .top-header {
     display: flex;
     justify-content: space-between;
@@ -325,6 +340,7 @@ body {
     margin-bottom: 30px;
     flex-wrap: wrap;
     gap: 15px;
+    width: 100%;
 }
 .top-header h1 { font-size: 2rem; font-weight: 700; }
 .subtitle {
@@ -342,7 +358,7 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     padding: 0 12px;
     height: 42px;
     border-radius: 10px;
@@ -350,7 +366,6 @@ body {
     transition: 0.2s;
     line-height: 1;
     box-shadow: var(--shadow);
-    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -375,13 +390,17 @@ body {
     background: var(--hover-bg);
     transform: translateY(-1px);
 }
+.dark-toggle i {
+    margin-right: 6px;
+}
 
-/* Summary */
+/* ========== SUMMARY CARDS ========== */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 18px;
     margin-bottom: 25px;
+    width: 100%;
 }
 .card {
     background: var(--bg-card);
@@ -401,6 +420,9 @@ body {
     font-size: 0.85rem;
     margin-bottom: 6px;
 }
+.card-header i {
+    margin-right: 6px;
+}
 .card-value {
     font-size: 2rem;
     font-weight: 700;
@@ -416,7 +438,7 @@ body {
 .card-expense .card-value { color: var(--accent-red); }
 .card-savings .card-value { color: var(--accent-purple); }
 
-/* Filter */
+/* ========== FILTER BAR ========== */
 .filter-bar {
     display: flex;
     justify-content: space-between;
@@ -429,6 +451,7 @@ body {
     border: 1px solid var(--border-color);
     margin-bottom: 25px;
     box-shadow: var(--shadow);
+    width: 100%;
 }
 .filter-left {
     display: flex;
@@ -459,13 +482,17 @@ body {
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
 }
+.stat-badge i {
+    margin-right: 6px;
+}
 
-/* Row */
+/* ========== ROW (Form + Chart) ========== */
 .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
     margin-bottom: 30px;
+    width: 100%;
 }
 @media (max-width: 800px) {
     .row { grid-template-columns: 1fr; }
@@ -482,6 +509,10 @@ body {
     font-size: 1.2rem;
     margin-bottom: 18px;
 }
+.form-box h2 i {
+    color: var(--accent-purple);
+    margin-right: 8px;
+}
 .form-group {
     margin-bottom: 14px;
 }
@@ -491,6 +522,9 @@ body {
     font-weight: 600;
     color: var(--text-secondary);
     margin-bottom: 4px;
+}
+.form-group label i {
+    margin-right: 4px;
 }
 .form-group input,
 .form-group select {
@@ -519,6 +553,9 @@ body {
     cursor: pointer;
     color: var(--text-primary);
 }
+.radio-group i {
+    margin-right: 4px;
+}
 
 .btn {
     padding: 12px 24px;
@@ -528,6 +565,9 @@ body {
     font-size: 0.95rem;
     cursor: pointer;
     transition: var(--transition);
+}
+.btn i {
+    margin-right: 8px;
 }
 .btn-primary {
     background: var(--accent-purple);
@@ -553,6 +593,10 @@ body {
     font-size: 1.2rem;
     margin-bottom: 10px;
 }
+.chart-box h2 i {
+    color: var(--accent-purple);
+    margin-right: 8px;
+}
 .chart-wrapper {
     flex: 1;
     display: flex;
@@ -571,13 +615,14 @@ body {
     padding: 20px 0;
 }
 
-/* List */
+/* ========== TRANSACTION LIST ========== */
 .list-box {
     background: var(--bg-card);
     padding: 25px 28px;
     border-radius: var(--card-radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
+    width: 100%;
 }
 .list-header {
     display: flex;
@@ -588,6 +633,10 @@ body {
 }
 .list-header h2 {
     font-size: 1.2rem;
+}
+.list-header h2 i {
+    color: var(--accent-purple);
+    margin-right: 8px;
 }
 .list-header span {
     color: var(--text-secondary);
@@ -671,7 +720,7 @@ body {
     font-style: italic;
 }
 
-/* Toasts */
+/* ========== TOASTS ========== */
 .toast-container {
     position: fixed;
     bottom: 30px;
