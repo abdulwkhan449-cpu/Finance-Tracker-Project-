@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Finora · Personal Finance</title>
 
-    <!-- Google Font (Inter) for a modern, crisp look -->
+    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
@@ -17,13 +17,13 @@
 </head>
 <body>
 
-    <!-- ===== TOAST CONTAINER (for notifications) ===== -->
+    <!-- ===== TOAST CONTAINER ===== -->
     <div id="toastContainer" class="toast-container"></div>
 
     <div class="app-container">
 
-        <!-- ===== LEFT SIDEBAR (Realistic Dashboard feel) ===== -->
-        <aside class="sidebar">
+        <!-- ===== SIDEBAR SLIDER ===== -->
+        <aside class="sidebar" id="sidebar">
             <div class="logo">
                 <span class="logo-icon">📊</span>
                 <span>Finora</span>
@@ -41,14 +41,21 @@
             </div>
         </aside>
 
+        <!-- ===== OVERLAY (closes sidebar on mobile) ===== -->
+        <div class="overlay" id="sidebarOverlay"></div>
+
         <!-- ===== MAIN CONTENT ===== -->
-        <main class="main-content">
+        <main class="main-content" id="mainContent">
 
             <!-- Top Header -->
             <header class="top-header">
-                <div>
-                    <h1>Dashboard</h1>
-                    <p id="currentMonthDisplay" class="subtitle">July 2026 Overview</p>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <!-- Hamburger Button -->
+                    <button class="hamburger" id="menuToggle" aria-label="Toggle menu">☰</button>
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p id="currentMonthDisplay" class="subtitle">July 2026 Overview</p>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <button class="dark-toggle" id="darkModeToggle">🌙 Dark</button>
@@ -56,7 +63,7 @@
                 </div>
             </header>
 
-            <!-- ===== SUMMARY CARDS (With icons & accent borders) ===== -->
+            <!-- ===== SUMMARY CARDS ===== -->
             <section class="summary-grid">
                 <div class="card card-balance">
                     <div class="card-header"><span>💰 Total Balance</span></div>
@@ -94,7 +101,6 @@
 
             <!-- ===== CHART + FORM ROW ===== -->
             <div class="row">
-                <!-- Form Box -->
                 <div class="form-box">
                     <h2 id="formTitle">➕ Add Transaction</h2>
                     <form id="transactionForm">
@@ -130,7 +136,6 @@
                     </form>
                 </div>
 
-                <!-- Chart Box -->
                 <div class="chart-box">
                     <h2>📊 Spending Breakdown</h2>
                     <div class="chart-wrapper">
@@ -140,7 +145,7 @@
                 </div>
             </div>
 
-            <!-- ===== TRANSACTION LIST (With real data vibe) ===== -->
+            <!-- ===== TRANSACTION LIST ===== -->
             <div class="list-box">
                 <div class="list-header">
                     <h2>📋 Recent Transactions</h2>
