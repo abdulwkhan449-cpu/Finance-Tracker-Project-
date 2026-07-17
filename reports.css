@@ -1,22 +1,7 @@
 /* ============================================================
    REPORTS PAGE – ONLY Reports-Specific Styles
-   Sidebar & main-content behavior comes from index.css
+   Width & padding come from index.css (matches Dashboard)
    ============================================================ */
-
-/* ----- Container: Boxed width, reduced left padding ----- */
-.reports-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 16px 0 8px;  /* Left padding reduced to 8px */
-    width: 100%;
-    box-sizing: border-box;
-}
-
-@media (min-width: 640px) {
-    .reports-container {
-        padding: 0 24px 0 12px;  /* Left padding reduced on desktop */
-    }
-}
 
 /* ----- Top Spending List ----- */
 #topSpendingList .spending-item {
@@ -68,7 +53,7 @@ body.dark #topSpendingList .spending-item:hover {
     min-height: 280px !important;
 }
 
-/* ----- Summary Cards – color overrides ----- */
+/* ----- Summary Cards – color overrides (inherits card styling from index.css) ----- */
 .card-income .card-value {
     color: var(--accent-green) !important;
 }
@@ -79,7 +64,7 @@ body.dark #topSpendingList .spending-item:hover {
     color: var(--text-primary) !important;
 }
 
-/* ----- Ensure chart containers are full width of parent ----- */
+/* ----- Ensure chart containers are full width of their parent ----- */
 .chart-box {
     width: 100% !important;
     box-sizing: border-box !important;
