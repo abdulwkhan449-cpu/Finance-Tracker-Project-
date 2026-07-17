@@ -101,20 +101,35 @@ window.addEventListener('resize', () => {
 // 3. SETTINGS MODAL
 // ============================================================
 const settingsModal = document.getElementById('settingsModal');
+const settingsNavTrigger = document.getElementById('settingsNavTrigger');
 const closeSettingsBtn = document.getElementById('closeSettingsBtn');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 const settingsName = document.getElementById('settingsName');
 const settingsCurrency = document.getElementById('settingsCurrency');
 
-closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.remove('active'); });
+function openSettings() {
+    settingsName.value = userProfile.name;
+    settingsCurrency.value = userProfile.currency;
+    settingsModal.classList.add('active');
+}
+function closeSettings() {
+    settingsModal.classList.remove('active');
+}
+
+if (settingsNavTrigger) {
+    settingsNavTrigger.addEventListener('click', openSettings);
+}
+
+closeSettingsBtn.addEventListener('click', closeSettings);
 settingsModal.addEventListener('click', (e) => {
-    if (e.target === settingsModal) settingsModal.classList.remove('active');
+    if (e.target === settingsModal) closeSettings();
 });
 
 saveSettingsBtn.addEventListener('click', () => {
     const name = settingsName.value.trim();
     const currency = settingsCurrency.value;
     if (!name) return showToast('Please enter a name.', 'error');
+    
     userProfile.name = name;
     userProfile.currency = currency;
     userProfile.symbol = CURRENCY_SYMBOLS[currency] || 'Rs';
@@ -122,7 +137,7 @@ saveSettingsBtn.addEventListener('click', () => {
     updateUIWithUser();
     renderAll();
     closeSettings();
-    showToast('✅ Settings updated!', 'success');
+    showToast('✅ Settings updated successfully!', 'success');
 });
 
 // ============================================================
@@ -173,6 +188,7 @@ saveBudgetBtn.addEventListener('click', () => {
     if (isNaN(amount) || amount <= 0) return showToast('Enter a valid positive amount.', 'error');
 
     if (editingBudgetId === null) {
+        // Check for existing budget for this category
         const existing = budgets.find(b => b.category === category);
         if (existing) {
             return showToast(`A budget for "${category}" already exists.`, 'error');
@@ -417,13 +433,18 @@ function renderBudgetSummary(transactions, month) {
 }
 
 // ============================================================
-// 12. LISTEN FOR STORAGE CHANGES (sync with dashboard)
+// 12. LISTEN FOR STORAGE CHANGES (sync with dashboard/reports)
 // ============================================================
 window.addEventListener('storage', (e) => {
-    if (e.key === 'financeData' || e.key === 'userProfile' || e.key === 'darkMode') {
+    if (e.key === 'financeData' || e.key === 'userProfile' || e.key === 'darkMode' || e.key === 'budgets') {
         renderAll();
         updateUIWithUser();
     }
+});
+
+// Custom event for same‑tab updates
+document.addEventListener('transactionsUpdated', () => {
+    renderAll();
 });
 
 // ============================================================
