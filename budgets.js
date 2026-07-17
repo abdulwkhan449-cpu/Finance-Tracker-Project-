@@ -188,7 +188,6 @@ saveBudgetBtn.addEventListener('click', () => {
     if (isNaN(amount) || amount <= 0) return showToast('Enter a valid positive amount.', 'error');
 
     if (editingBudgetId === null) {
-        // Check for existing budget for this category
         const existing = budgets.find(b => b.category === category);
         if (existing) {
             return showToast(`A budget for "${category}" already exists.`, 'error');
@@ -262,7 +261,7 @@ function loadBudgets() {
     if (stored) {
         budgets = JSON.parse(stored);
     } else {
-        // SEED WITH DEFAULT BUDGETS (so it looks great immediately)
+        // SEED WITH DEFAULT BUDGETS
         budgets = [
             { id: Date.now() + 1, category: 'Food & Dining', amount: 500 },
             { id: Date.now() + 2, category: 'Transport', amount: 200 },
@@ -414,16 +413,23 @@ function renderBudgetList(transactions, month) {
 }
 
 // ============================================================
-// 11. RENDER BUDGET SUMMARY
+// 11. RENDER BUDGET SUMMARY (FIXED: Total Budget = Total Income from Dashboard)
 // ============================================================
 function renderBudgetSummary(transactions, month) {
-    let totalBudget = 0;
-    let totalSpent = 0;
-
-    budgets.forEach(budget => {
-        totalBudget += budget.amount;
-        totalSpent += getCategorySpending(transactions, budget.category, month);
+    // ✅ Calculate Total Income from Dashboard (same data)
+    const allIncome = transactions.filter(tx => {
+        return tx.type === 'income' && tx.date && tx.date.startsWith(month);
     });
+    const totalIncome = allIncome.reduce((sum, tx) => sum + tx.amount, 0);
+
+    // ✅ Total Budget = Total Income (matches Dashboard)
+    const totalBudget = totalIncome;
+
+    // ✅ Total Spent = ALL expenses for the month
+    const allExpenses = transactions.filter(tx => {
+        return tx.type === 'expense' && tx.date && tx.date.startsWith(month);
+    });
+    const totalSpent = allExpenses.reduce((sum, tx) => sum + tx.amount, 0);
 
     document.getElementById('totalBudgetDisplay').textContent = formatCurrency(totalBudget);
     document.getElementById('totalSpentDisplay').textContent = formatCurrency(totalSpent);
@@ -433,8 +439,10 @@ function renderBudgetSummary(transactions, month) {
 }
 
 // ============================================================
-// 12. LISTEN FOR STORAGE CHANGES (sync with dashboard/reports)
+// 12. INTEGRATION: AUTO-REFRESH ON DATA CHANGES
 // ============================================================
+
+// Listen for changes from other tabs
 window.addEventListener('storage', (e) => {
     if (e.key === 'financeData' || e.key === 'userProfile' || e.key === 'darkMode' || e.key === 'budgets') {
         renderAll();
@@ -442,9 +450,15 @@ window.addEventListener('storage', (e) => {
     }
 });
 
-// Custom event for same‑tab updates
+// Custom event for same-tab updates (dispatched from Dashboard)
 document.addEventListener('transactionsUpdated', () => {
     renderAll();
+});
+
+// Refresh when the tab gains focus (user switches back to Budgets)
+window.addEventListener('focus', () => {
+    renderAll();
+    updateUIWithUser();
 });
 
 // ============================================================
