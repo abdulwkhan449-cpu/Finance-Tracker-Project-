@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finora · Settings</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Base CSS (Sidebar & Themes) -->
+    <link rel="stylesheet" href="index.css" />
+
+    <!-- Settings-specific styles -->
+    <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ========================================================== -->
+    <!-- MAIN APP                                                   -->
+    <!-- ========================================================== -->
+    <div class="app-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <span class="logo-icon"><i class="fas fa-chart-pie"></i></span>
+                <span>Finora</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="reports.html" class="nav-item"><i class="fas fa-chart-line"></i> Reports</a>
+                <a href="budgets.html" class="nav-item"><i class="fas fa-wallet"></i> Budgets</a>
+                <a href="#" class="nav-item active"><i class="fas fa-cog"></i> Settings</a>
+            </nav>
+            <div class="sidebar-user">
+                <div class="avatar" id="userAvatar">JD</div>
+                <span id="sidebarUserName">John Doe</span>
+                <small>Free Plan</small>
+            </div>
+        </aside>
+
+        <!-- Overlay -->
+        <div class="overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+
+            <header class="top-header">
+                <div class="flex items-center gap-4">
+                    <button class="hamburger" id="menuToggle"><i class="fas fa-bars"></i></button>
+                    <div>
+                        <h1 class="text-3xl font-bold">Settings</h1>
+                        <p class="subtitle">Manage your account and preferences</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <span id="headerCurrencyDisplay" class="font-semibold text-gray-500 dark:text-gray-400">USD</span>
+                    <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-moon"></i> Dark</button>
+                </div>
+            </header>
+
+            <!-- Settings Sections -->
+            <div class="settings-container">
+
+                <!-- ===== PROFILE SECTION ===== -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-user-circle text-purple-600"></i>
+                        <h2>Profile</h2>
+                        <span class="section-subtitle">Update your personal information</span>
+                    </div>
+                    <div class="settings-card">
+                        <div class="form-group">
+                            <label for="settingsProfileName"><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" id="settingsProfileName" placeholder="Your full name" />
+                        </div>
+                        <div class="form-group">
+                            <label for="settingsProfileCurrency"><i class="fas fa-money-bill-wave"></i> Currency</label>
+                            <select id="settingsProfileCurrency">
+                                <option value="PKR">🇵🇰 PKR (Rs)</option>
+                                <option value="USD">🇺🇸 USD ($)</option>
+                                <option value="EUR">🇪🇺 EUR (€)</option>
+                                <option value="GBP">🇬🇧 GBP (£)</option>
+                                <option value="INR">🇮🇳 INR (₹)</option>
+                                <option value="JPY">🇯🇵 JPY (¥)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="saveProfileBtn" style="width: auto; padding: 10px 30px; margin-top: 8px;">
+                            <i class="fas fa-save"></i> Save Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== APPEARANCE SECTION ===== -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-palette text-purple-600"></i>
+                        <h2>Appearance</h2>
+                        <span class="section-subtitle">Customize how Finora looks</span>
+                    </div>
+                    <div class="settings-card">
+                        <div class="appearance-option">
+                            <div class="flex items-center justify-between w-full">
+                                <div>
+                                    <span class="font-semibold"><i class="fas fa-moon"></i> Dark Mode</span>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Switch between light and dark themes</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="darkModeSwitch" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="appearance-option border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                            <div class="flex items-center justify-between w-full">
+                                <div>
+                                    <span class="font-semibold"><i class="fas fa-sidebar"></i> Sidebar Behavior</span>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Sidebar pushes content on desktop</p>
+                                </div>
+                                <span class="text-sm text-gray-400">Always on</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== DATA MANAGEMENT SECTION ===== -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-database text-purple-600"></i>
+                        <h2>Data Management</h2>
+                        <span class="section-subtitle">Export, import, or clear your data</span>
+                    </div>
+                    <div class="settings-card">
+                        <div class="data-actions">
+                            <button class="data-btn export-btn" id="exportDataBtn">
+                                <i class="fas fa-file-export"></i>
+                                <div>
+                                    <span class="font-semibold">Export Data</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Download all transactions as CSV</p>
+                                </div>
+                                <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+                            </button>
+                            <button class="data-btn import-btn" id="importDataBtn">
+                                <i class="fas fa-file-import"></i>
+                                <div>
+                                    <span class="font-semibold">Import Data</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Import transactions from CSV file</p>
+                                </div>
+                                <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+                            </button>
+                            <input type="file" id="fileInput" accept=".csv" style="display: none;" />
+                            <button class="data-btn clear-btn" id="clearDataBtn">
+                                <i class="fas fa-trash-alt"></i>
+                                <div>
+                                    <span class="font-semibold text-red-500">Clear All Data</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Permanently delete all transactions</p>
+                                </div>
+                                <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== ACCOUNT SECTION ===== -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-shield-alt text-purple-600"></i>
+                        <h2>Account</h2>
+                        <span class="section-subtitle">Manage your account settings</span>
+                    </div>
+                    <div class="settings-card">
+                        <button class="data-btn logout-btn" id="settingsLogoutBtn">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                            <div>
+                                <span class="font-semibold text-red-500">Logout</span>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Sign out of your account</p>
+                            </div>
+                            <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ===== ABOUT SECTION ===== -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <i class="fas fa-info-circle text-purple-600"></i>
+                        <h2>About</h2>
+                        <span class="section-subtitle">Version & information</span>
+                    </div>
+                    <div class="settings-card text-center py-6">
+                        <div class="flex items-center justify-center gap-3 mb-2">
+                            <span class="logo-icon text-lg"><i class="fas fa-chart-pie"></i></span>
+                            <span class="text-xl font-bold">Finora</span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Version 2.0.0</p>
+                        <p class="text-xs text-gray-400 mt-1">Personal Finance Tracker</p>
+                        <p class="text-xs text-gray-400 mt-4">Made with ❤️ using HTML, CSS, JavaScript</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- SETTINGS MODAL (Reuse from index)                          -->
+    <!-- ========================================================== -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4"><i class="fas fa-cog"></i> Settings</h2>
+            <div class="form-group">
+                <label for="settingsName">Name</label>
+                <input type="text" id="settingsName" placeholder="Your Name" />
+            </div>
+            <div class="form-group">
+                <label for="settingsCurrency">Currency</label>
+                <select id="settingsCurrency">
+                    <option value="PKR">🇵🇰 PKR (Rs)</option>
+                    <option value="USD">🇺🇸 USD ($)</option>
+                    <option value="EUR">🇪🇺 EUR (€)</option>
+                    <option value="GBP">🇬🇧 GBP (£)</option>
+                    <option value="INR">🇮🇳 INR (₹)</option>
+                    <option value="JPY">🇯🇵 JPY (¥)</option>
+                </select>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-4">
+                <button class="btn btn-primary flex-1" id="saveSettingsBtn"><i class="fas fa-save"></i> Save Changes</button>
+                <button class="btn flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300" id="closeSettingsBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+</html>
