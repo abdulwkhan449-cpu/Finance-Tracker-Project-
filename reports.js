@@ -42,7 +42,7 @@ function formatCurrency(amount) {
 }
 
 // ============================================================
-// 2. SIDEBAR LOGIC
+// 2. SIDEBAR LOGIC (IDENTICAL to index.js)
 // ============================================================
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
@@ -53,6 +53,7 @@ function toggleSidebar(forceState) {
     const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
     sidebar.classList.toggle('open', isOpen);
 
+    // Only show overlay on mobile (under 900px)
     if (window.innerWidth < 901) {
         overlay.classList.toggle('active', isOpen);
     } else {
@@ -95,7 +96,7 @@ window.addEventListener('resize', () => {
 });
 
 // ============================================================
-// 3. SETTINGS MODAL
+// 3. SETTINGS MODAL (IDENTICAL to index.js)
 // ============================================================
 const settingsModal = document.getElementById('settingsModal');
 const settingsNavTrigger = document.getElementById('settingsNavTrigger');
@@ -168,7 +169,7 @@ function toggleDarkMode() {
     const isDark = document.body.classList.contains('dark');
     darkToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light' : '<i class="fas fa-moon"></i> Dark';
     localStorage.setItem('darkMode', isDark);
-    renderAll(); // Re-render charts to fix colors
+    renderAll();
 }
 
 // ============================================================
@@ -199,7 +200,6 @@ function populateYearFilter(years) {
     select.innerHTML = '';
     
     if (years.length === 0) {
-        // If no transactions, add current year
         years = [currentYear];
     }
     
@@ -274,7 +274,6 @@ function updateSummaryCards(transactions) {
 function renderMonthlyChart(transactions) {
     const ctx = document.getElementById('monthlyChart').getContext('2d');
     
-    // Destroy existing chart
     if (monthlyChart) {
         monthlyChart.destroy();
         monthlyChart = null;
@@ -301,10 +300,9 @@ function renderMonthlyChart(transactions) {
         return;
     }
     
-    // Group by month
     const monthMap = {};
     transactions.forEach(tx => {
-        const month = tx.date.substring(0, 7); // YYYY-MM
+        const month = tx.date.substring(0, 7);
         if (!monthMap[month]) {
             monthMap[month] = { income: 0, expense: 0 };
         }
@@ -378,11 +376,9 @@ function renderCategoryChart(transactions) {
         categoryChart = null;
     }
     
-    // Filter expenses only
     const expenses = transactions.filter(tx => tx.type === 'expense');
     if (expenses.length === 0) {
         emptyMsg.style.display = 'block';
-        // Show empty chart
         categoryChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -402,7 +398,6 @@ function renderCategoryChart(transactions) {
     }
     emptyMsg.style.display = 'none';
     
-    // Group by category
     const catMap = {};
     expenses.forEach(tx => {
         catMap[tx.category] = (catMap[tx.category] || 0) + tx.amount;
@@ -463,13 +458,11 @@ function renderTopSpending(transactions) {
         return;
     }
     
-    // Group by category and sum
     const catMap = {};
     expenses.forEach(tx => {
         catMap[tx.category] = (catMap[tx.category] || 0) + tx.amount;
     });
     
-    // Sort by amount descending
     const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
     const total = sorted.reduce((sum, [, amount]) => sum + amount, 0);
     
@@ -500,25 +493,20 @@ function renderTopSpending(transactions) {
 document.addEventListener('DOMContentLoaded', () => {
     const hasUser = loadUserProfile();
     if (!hasUser) {
-        // Redirect to login if no user profile
         window.location.href = 'index.html';
         return;
     }
     
-    // Set up dark mode
     if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark');
         darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light';
     }
     darkToggle.addEventListener('click', toggleDarkMode);
     
-    // Load data and render
     renderAll();
     
-    // Event listeners
     document.getElementById('yearFilter').addEventListener('change', renderAll);
     
-    // Restore sidebar state
     const savedSidebarState = localStorage.getItem('sidebarOpen');
     const isDesktop = window.innerWidth >= 901;
     let defaultOpen = isDesktop;
