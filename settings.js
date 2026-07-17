@@ -1,18 +1,18 @@
 // ============================================================
 // 0. USER PROFILE & GLOBAL STATE
 // ============================================================
-let userProfile = { name: 'Guest', currency: 'USD', symbol: '$' };
+let userProfile = { name: 'Guest', currency: 'PKR', symbol: 'Rs' };
 const CURRENCY_SYMBOLS = { PKR: 'Rs', USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥' };
 
 // ============================================================
-// 1. LOAD USER PROFILE & THEME
+// 1. LOAD USER PROFILE (same as index.js)
 // ============================================================
 function loadUserProfile() {
     const stored = localStorage.getItem('userProfile');
     if (stored) {
         userProfile = JSON.parse(stored);
         if (!userProfile.symbol || !CURRENCY_SYMBOLS[userProfile.currency]) {
-            userProfile.symbol = CURRENCY_SYMBOLS[userProfile.currency] || '$';
+            userProfile.symbol = CURRENCY_SYMBOLS[userProfile.currency] || 'Rs';
         }
         return true;
     }
@@ -31,12 +31,12 @@ function updateUIWithUser() {
 }
 
 function formatCurrency(amount) {
-    const symbol = userProfile.symbol || '$';
+    const symbol = userProfile.symbol || 'Rs';
     return symbol + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // ============================================================
-// 2. SIDEBAR LOGIC (Identical to index.js)
+// 2. SIDEBAR LOGIC (identical to index.js)
 // ============================================================
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
@@ -89,7 +89,7 @@ window.addEventListener('resize', () => {
 });
 
 // ============================================================
-// 3. DARK MODE
+// 3. DARK MODE (syncs with all pages)
 // ============================================================
 const darkToggle = document.getElementById('darkModeToggle');
 const darkModeSwitch = document.getElementById('darkModeSwitch');
@@ -102,9 +102,12 @@ function toggleDarkMode() {
         darkModeSwitch.checked = isDark;
     }
     localStorage.setItem('darkMode', isDark);
+    // Dispatch event so other pages can sync (if open)
+    window.dispatchEvent(new Event('storage'));
 }
 
 darkToggle.addEventListener('click', toggleDarkMode);
+
 if (darkModeSwitch) {
     darkModeSwitch.addEventListener('change', (e) => {
         const isDark = e.target.checked;
@@ -116,6 +119,7 @@ if (darkModeSwitch) {
             darkToggle.innerHTML = '<i class="fas fa-moon"></i> Dark';
         }
         localStorage.setItem('darkMode', isDark);
+        window.dispatchEvent(new Event('storage'));
     });
 }
 
@@ -137,24 +141,7 @@ function showToast(message, type = 'info') {
 }
 
 // ============================================================
-// 5. SETTINGS MODAL (Reused from index)
-// ============================================================
-const settingsModal = document.getElementById('settingsModal');
-const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-const settingsName = document.getElementById('settingsName');
-const settingsCurrency = document.getElementById('settingsCurrency');
-
-closeSettingsBtn.addEventListener('click', () => {
-    settingsModal.classList.remove('active');
-});
-
-settingsModal.addEventListener('click', (e) => {
-    if (e.target === settingsModal) settingsModal.classList.remove('active');
-});
-
-// ============================================================
-// 6. SAVE PROFILE (From Settings Page)
+// 5. SAVE PROFILE (updates localStorage and syncs all pages)
 // ============================================================
 document.getElementById('saveProfileBtn').addEventListener('click', () => {
     const name = document.getElementById('settingsProfileName').value.trim();
@@ -167,14 +154,19 @@ document.getElementById('saveProfileBtn').addEventListener('click', () => {
 
     userProfile.name = name;
     userProfile.currency = currency;
-    userProfile.symbol = CURRENCY_SYMBOLS[currency] || '$';
+    userProfile.symbol = CURRENCY_SYMBOLS[currency] || 'Rs';
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
     updateUIWithUser();
+
+    // Dispatch event so other pages can sync (if open)
+    window.dispatchEvent(new Event('storage'));
+
     showToast('✅ Profile updated successfully!', 'success');
 });
 
 // ============================================================
-// 7. EXPORT DATA (CSV)
+// 6. EXPORT DATA (CSV)
 // ============================================================
 document.getElementById('exportDataBtn').addEventListener('click', () => {
     const stored = localStorage.getItem('financeData');
@@ -189,7 +181,6 @@ document.getElementById('exportDataBtn').addEventListener('click', () => {
         return;
     }
 
-    // Create CSV header
     const headers = ['Date', 'Description', 'Category', 'Type', 'Amount'];
     const rows = transactions.map(tx => [
         tx.date || '',
@@ -214,7 +205,7 @@ document.getElementById('exportDataBtn').addEventListener('click', () => {
 });
 
 // ============================================================
-// 8. IMPORT DATA (CSV)
+// 7. IMPORT DATA (CSV)
 // ============================================================
 document.getElementById('importDataBtn').addEventListener('click', () => {
     document.getElementById('fileInput').click();
@@ -235,7 +226,6 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
                 return;
             }
 
-            // Parse header
             const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
             const dateIdx = headers.findIndex(h => h.includes('date'));
             const descIdx = headers.findIndex(h => h.includes('desc'));
@@ -244,11 +234,10 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
             const amountIdx = headers.findIndex(h => h.includes('amount'));
 
             if (dateIdx === -1 || descIdx === -1 || amountIdx === -1) {
-                showToast('Invalid CSV format. Required columns: Date, Description, Amount', 'error');
+                showToast('Invalid CSV format. Required: Date, Description, Amount', 'error');
                 return;
             }
 
-            // Parse rows
             const transactions = [];
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
@@ -275,13 +264,14 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
                 return;
             }
 
-            // Merge with existing data
             const existing = JSON.parse(localStorage.getItem('financeData') || '[]');
             const merged = [...existing, ...transactions];
             localStorage.setItem('financeData', JSON.stringify(merged));
 
-            // Reset file input
             document.getElementById('fileInput').value = '';
+
+            // Dispatch event so other pages can sync
+            window.dispatchEvent(new Event('storage'));
 
             showToast(`✅ Imported ${transactions.length} transactions successfully!`, 'success');
         } catch (err) {
@@ -293,7 +283,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 });
 
 // ============================================================
-// 9. CLEAR ALL DATA
+// 8. CLEAR ALL DATA
 // ============================================================
 document.getElementById('clearDataBtn').addEventListener('click', () => {
     const stored = localStorage.getItem('financeData');
@@ -307,11 +297,15 @@ document.getElementById('clearDataBtn').addEventListener('click', () => {
     }
 
     localStorage.removeItem('financeData');
+
+    // Dispatch event so other pages can sync
+    window.dispatchEvent(new Event('storage'));
+
     showToast('🗑️ All data has been cleared.', 'info');
 });
 
 // ============================================================
-// 10. LOGOUT
+// 9. LOGOUT
 // ============================================================
 document.getElementById('settingsLogoutBtn').addEventListener('click', () => {
     if (confirm('Are you sure you want to logout?')) {
@@ -321,18 +315,44 @@ document.getElementById('settingsLogoutBtn').addEventListener('click', () => {
 });
 
 // ============================================================
-// 11. KEYBOARD SHORTCUT: Escape to close modals
+// 10. LISTEN FOR STORAGE CHANGES (from other pages)
 // ============================================================
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        if (settingsModal.classList.contains('active')) {
-            settingsModal.classList.remove('active');
+window.addEventListener('storage', (e) => {
+    if (e.key === 'userProfile') {
+        loadUserProfile();
+        updateUIWithUser();
+        // Update dark mode if changed from elsewhere
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light';
+            if (darkModeSwitch) darkModeSwitch.checked = true;
+        } else {
+            document.body.classList.remove('dark');
+            darkToggle.innerHTML = '<i class="fas fa-moon"></i> Dark';
+            if (darkModeSwitch) darkModeSwitch.checked = false;
+        }
+    }
+    if (e.key === 'darkMode') {
+        const isDark = e.newValue === 'true';
+        if (isDark) {
+            document.body.classList.add('dark');
+            darkToggle.innerHTML = '<i class="fas fa-sun"></i> Light';
+            if (darkModeSwitch) darkModeSwitch.checked = true;
+        } else {
+            document.body.classList.remove('dark');
+            darkToggle.innerHTML = '<i class="fas fa-moon"></i> Dark';
+            if (darkModeSwitch) darkModeSwitch.checked = false;
         }
     }
 });
 
+// Also listen for custom events within same tab
+document.addEventListener('storage', () => {
+    // Re-run if needed
+});
+
 // ============================================================
-// 12. INITIALIZATION
+// 11. INITIALIZATION
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
     const hasUser = loadUserProfile();
