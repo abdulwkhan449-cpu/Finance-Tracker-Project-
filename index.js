@@ -1,9 +1,9 @@
 // ============================================================
 // 0. USER PROFILE MANAGEMENT (CURRENCY FIXED)
 // ============================================================
-let userProfile = { name: 'Guest', currency: 'USD', symbol: '$' };
+let userProfile = { name: 'Guest', currency: 'PKR', symbol: 'Rs' };
 
-// ✅ Currency Symbol Map (PKR added and verified)
+// ✅ Currency Symbol Map
 const CURRENCY_SYMBOLS = {
     PKR: 'Rs',
     USD: '$',
@@ -17,9 +17,8 @@ function loadUserProfile() {
     const stored = localStorage.getItem('userProfile');
     if (stored) {
         userProfile = JSON.parse(stored);
-        // Ensure symbol is correctly set even if old data is missing it
         if (!userProfile.symbol || !CURRENCY_SYMBOLS[userProfile.currency]) {
-            userProfile.symbol = CURRENCY_SYMBOLS[userProfile.currency] || '$';
+            userProfile.symbol = CURRENCY_SYMBOLS[userProfile.currency] || 'Rs';
         }
         console.log('✅ Profile loaded:', userProfile);
         return true;
@@ -31,20 +30,20 @@ function saveUserProfile(name, currency, initialBalance = 0) {
     userProfile = {
         name: name,
         currency: currency,
-        symbol: CURRENCY_SYMBOLS[currency] || '$'
+        symbol: CURRENCY_SYMBOLS[currency] || 'Rs'
     };
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
     console.log('✅ Profile saved:', userProfile);
     
     if (initialBalance > 0) {
-        const month = new Date().toISOString().slice(0, 7);
+        const today = new Date().toISOString().slice(0, 10); // ✅ Today's date
         const newTx = {
             id: Date.now(),
             description: '💰 Initial Deposit (Sign-up)',
             amount: parseFloat(initialBalance),
             category: 'Salary',
             type: 'income',
-            date: month + '-01'
+            date: today
         };
         let txs = JSON.parse(localStorage.getItem('financeData') || '[]');
         txs.push(newTx);
@@ -156,7 +155,11 @@ function openSettings() {
 function closeSettings() {
     settingsModal.classList.remove('active');
 }
-settingsNavTrigger.addEventListener('click', openSettings);
+
+if (settingsNavTrigger) {
+    settingsNavTrigger.addEventListener('click', openSettings);
+}
+
 closeSettingsBtn.addEventListener('click', closeSettings);
 settingsModal.addEventListener('click', (e) => {
     if (e.target === settingsModal) closeSettings();
@@ -169,7 +172,7 @@ saveSettingsBtn.addEventListener('click', () => {
     
     userProfile.name = name;
     userProfile.currency = currency;
-    userProfile.symbol = CURRENCY_SYMBOLS[currency] || '$';
+    userProfile.symbol = CURRENCY_SYMBOLS[currency] || 'Rs';
     localStorage.setItem('userProfile', JSON.stringify(userProfile));
     updateUIWithUser();
     renderAll();
@@ -326,9 +329,8 @@ function updateMonthLabel(monthVal) {
     listMonthLabel.textContent = `Showing ${label}`;
 }
 
-// ✅ UPDATED: Uses userProfile.symbol correctly
 function formatCurrency(amount) {
-    const symbol = userProfile.symbol || '$';
+    const symbol = userProfile.symbol || 'Rs';
     return symbol + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
@@ -472,7 +474,7 @@ function escapeHTML(text) {
 }
 
 // ============================================================
-// 13. CRUD
+// 13. CRUD (FIXED: Uses current date for new transactions)
 // ============================================================
 function handleFormSubmit(e) {
     e.preventDefault();
@@ -486,20 +488,35 @@ function handleFormSubmit(e) {
     if (!description) return showToast('Please enter a description.', 'error');
     if (isNaN(amount) || amount <= 0) return showToast('Please enter a valid positive amount.', 'error');
 
-    const month = monthFilter.value;
-    if (!month) return showToast('Please select a month.', 'error');
+    // ✅ Use current date for the transaction (YYYY-MM-DD)
+    const today = new Date().toISOString().slice(0, 10);
 
     if (editingId !== null) {
         const index = transactions.findIndex(tx => tx.id === editingId);
         if (index !== -1) {
-            transactions[index] = { ...transactions[index], description, amount, category, type, date: month + '-01' };
+            // When editing, keep the original date (or update to today? We'll keep original date)
+            transactions[index] = { 
+                ...transactions[index], 
+                description, 
+                amount, 
+                category, 
+                type
+                // date remains unchanged
+            };
             showToast('✅ Transaction updated!', 'success');
         }
         editingId = null;
         submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Transaction';
         formTitle.innerHTML = '<i class="fas fa-plus-circle"></i> Add Transaction';
     } else {
-        const newTx = { id: Date.now(), description, amount, category, type, date: month + '-01' };
+        const newTx = { 
+            id: Date.now(), 
+            description, 
+            amount, 
+            category, 
+            type, 
+            date: today  // ✅ Store actual date
+        };
         transactions.push(newTx);
         showToast('🎉 Transaction added!', 'success');
     }
