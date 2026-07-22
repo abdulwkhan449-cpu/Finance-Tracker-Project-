@@ -36,7 +36,7 @@ function saveUserProfile(name, currency, initialBalance = 0) {
     console.log('✅ Profile saved:', userProfile);
     
     if (initialBalance > 0) {
-        const today = new Date().toISOString().slice(0, 10); // ✅ Today's date
+        const today = new Date().toISOString().slice(0, 10);
         const newTx = {
             id: Date.now(),
             description: '💰 Initial Deposit (Sign-up)',
@@ -64,15 +64,33 @@ function updateUIWithUser() {
     console.log('🔄 UI updated with currency:', userProfile.currency, 'symbol:', userProfile.symbol);
 }
 
+// ============================================================
+// ⭐ UPDATED: Login Page Display with Force-Clear
+// ============================================================
 function showLoginPage(show) {
     const loginPage = document.getElementById('loginPage');
     const appContainer = document.getElementById('appContainer');
     if (show) {
         loginPage.classList.remove('hidden');
         appContainer.style.display = 'none';
-        // Clear any pre-filled values from inputs
-        document.getElementById('loginName').value = '';
-        document.getElementById('loginBalance').value = '';
+
+        // 🔥 FORCE CLEAR input fields (defeats pre-filled values & autofill)
+        const nameInput = document.getElementById('loginName');
+        const balanceInput = document.getElementById('loginBalance');
+        
+        // Clear immediately
+        nameInput.value = '';
+        balanceInput.value = '';
+        
+        // Disable autofill (browser might override)
+        nameInput.setAttribute('autocomplete', 'off');
+        balanceInput.setAttribute('autocomplete', 'off');
+        
+        // Extra: clear again after a tiny delay (catches browser auto-fill)
+        setTimeout(() => {
+            nameInput.value = '';
+            balanceInput.value = '';
+        }, 50);
     } else {
         loginPage.classList.add('hidden');
         appContainer.style.display = 'flex';
@@ -191,13 +209,12 @@ logoutBtn.addEventListener('click', () => {
 // ============================================================
 // 3. LOGIN HANDLER (UPDATED - No pre-filled values)
 // ============================================================
-// Get login button and inputs
 const loginBtn = document.getElementById('loginBtn');
 const loginName = document.getElementById('loginName');
 const loginBalance = document.getElementById('loginBalance');
 const loginCurrency = document.getElementById('loginCurrency');
 
-// Clear any values that might have been set
+// Ensure they are empty on page load (extra safety)
 loginName.value = '';
 loginBalance.value = '';
 
@@ -213,12 +230,10 @@ loginBtn.addEventListener('click', () => {
     saveUserProfile(name, currency, balance);
 });
 
-// Allow Enter key on balance field
+// Allow Enter key on both fields
 loginBalance.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') loginBtn.click();
 });
-
-// Also allow Enter key on name field
 loginName.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') loginBtn.click();
 });
@@ -298,6 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleSidebar(defaultOpen);
     } else {
         showLoginPage(true);
+        // Additional clear (just in case)
+        document.getElementById('loginName').value = '';
+        document.getElementById('loginBalance').value = '';
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark');
         }
@@ -508,20 +526,17 @@ function handleFormSubmit(e) {
     if (!description) return showToast('Please enter a description.', 'error');
     if (isNaN(amount) || amount <= 0) return showToast('Please enter a valid positive amount.', 'error');
 
-    // ✅ Use current date for the transaction (YYYY-MM-DD)
     const today = new Date().toISOString().slice(0, 10);
 
     if (editingId !== null) {
         const index = transactions.findIndex(tx => tx.id === editingId);
         if (index !== -1) {
-            // When editing, keep the original date (or update to today? We'll keep original date)
             transactions[index] = { 
                 ...transactions[index], 
                 description, 
                 amount, 
                 category, 
                 type
-                // date remains unchanged
             };
             showToast('✅ Transaction updated!', 'success');
         }
@@ -535,7 +550,7 @@ function handleFormSubmit(e) {
             amount, 
             category, 
             type, 
-            date: today  // ✅ Store actual date
+            date: today
         };
         transactions.push(newTx);
         showToast('🎉 Transaction added!', 'success');
